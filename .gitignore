@@ -1,7 +1,37 @@
+# Model Files and Cache Directories
 *.gguf
-venv
-__pycache__
-Llama-3.2-3B
+Llama-3.2-3B/
+prompt_injection_lora/
+prompt_injection_lora_gguf/
+aavai_prompt_injection_lora/
+unsloth_compiled_cache/
 *.jsonl
-aavai_prompt_injection_lora
-unsloth_compiled_cache
+
+# Python Virtual Environments
+venv/
+.venv/
+AAVAI/
+
+# Python Cache / Compilations
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Node.js
+node_modules/
+dist/
+.eslintcache
+
+# Local Application Data & DB Stores
+backend/modules/rag_poisoning/document_store/*
+!backend/modules/rag_poisoning/document_store/.gitkeep
+backend/modules/rag_poisoning/faiss_index/*
+!backend/modules/rag_poisoning/faiss_index/
+backend/modules/rag_poisoning/faiss_metadata.json
+
+# IDEs & System files
+.vscode/
+.idea/
+.DS_Store
+*.log

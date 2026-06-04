@@ -90,30 +90,45 @@ The model was selected because it provides a balance between performance, hardwa
 
 ---
 
-## Architecture
+## Architecture Diagram
 
 ```text
-Student / Attacker
-        |
-        v
-  Chat Interface
-        |
-        v
-    AI Model
-        ^
-        |
- Prompt Injection LoRA
-
-Document Upload
-        |
-        v
- Knowledge Base
-        |
-        v
-   Retriever
-        |
-        v
-     AI Model
+               +----------------------------------------+
+               |             React Frontend             |
+               |           (Vite Development)           |
+               +-------------------+--------------------+
+                                   |
+                       API Calls   | (Port 5000 Proxy)
+                                   v
+               +-------------------+--------------------+
+               |             Flask Server               |
+               |          (WSGI Application)            |
+               +---------+--------------------+---------+
+                         |                    |
+            Prompt       |                    | Ingestion &
+            Injections   |                    | Index Retrieval
+                         v                    v
+               +---------+-------+   +--------+---------+
+               | Prompt Injection|   |  RAG Poisoning   |
+               |     Module      |   |     Module       |
+               +---------+-------+   +--------+---------+
+                         |                    |
+                         |                    | Semantic Search
+                         v                    v
+                  +------+-----+       +------+-----+
+                  | Disk Read  |       | FAISS DB   |
+                  | (System    |       | Index      |
+                  |  Prompts)  |       +------+-----+
+                  +------+-----+              |
+                         |                    |
+                         |   Inference Query  |
+                         +----------+---------+
+                                    |
+                                    v
+                         +----------+---------+
+                         |    Local LLM       |
+                         |    (Llama 3.2)     |
+                         +--------------------+
 ```
 
 The platform exposes two primary attack surfaces:
@@ -123,7 +138,7 @@ The platform exposes two primary attack surfaces:
 
 ---
 
-## Installation
+## Installation & Running
 
 Clone the repository:
 
@@ -150,43 +165,81 @@ Expected output:
 True
 ```
 
+### Running the Web Application
+
+The application is structured with a React client and Flask API. You can launch them concurrently:
+
+1. **Install Frontend Dependencies**:
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. **Start Both Servers**:
+   ```bash
+   npm run dev
+   ```
+   - **Frontend App**: `http://localhost:5173`
+   - **Backend API**: `http://localhost:5000`
+
 ---
 
 ## Project Structure
 
 ```text
 AAVAI/
-
+│
+├── backend/                       # Python Flask server
+│   ├── app.py                     # Entry point
+│   ├── config.py                  # Module configurations
+│   ├── requirements.txt           # Python dependency references
+│   ├── start.sh                   # Environment execution wrapper
+│   ├── model/                     # Model loaders
+│   │   └── loader.py
+│   └── modules/                   # Security challenges blueprints
+│       ├── prompt_injection/      # Direct injection sandbox
+│       │   ├── guardrails.py
+│       │   ├── routes.py
+│       │   └── system_prompt.txt
+│       └── rag_poisoning/         # Indirect injection sandbox
+│           ├── document_store/    # Ingested PDF/TXT files
+│           ├── faiss_index/       # Vector storage DB binary
+│           ├── faiss_metadata.json# Chunk content mappings
+│           ├── guardrails.py
+│           ├── pipeline.py
+│           ├── routes.py
+│           └── system_prompt.txt
+│
+├── frontend/                      # React + Vite web client
+│   ├── package.json               # Node packages
+│   ├── tsconfig.json              # TS configuration
+│   ├── vite.config.ts             # Proxy setup
+│   ├── src/                       # Client source code
+│   │   ├── main.tsx
+│   │   ├── App.tsx
+│   │   ├── index.css              # Glassmorphism & wobbly design
+│   │   ├── api/
+│   │   │   └── client.ts          # HTTP client
+│   │   ├── components/            # UI components
+│   │   │   ├── ChatInterface.tsx
+│   │   │   ├── DocumentUpload.tsx
+│   │   │   ├── ModelStatusBanner.tsx
+│   │   │   └── NavBar.tsx
+│   │   └── pages/                 # View layouts
+│   │       ├── Home.tsx
+│   │       ├── PromptInjection.tsx
+│   │       └── RagPoisoning.tsx
+│   └── public/
+│
+├── llm/                           # Local model binaries & adapter files
+│   ├── chat.py                    # Console chat utility
+│   ├── datasetgen.py              # Training dataset generator
+│   └── lora_maker.py              # Fine-tuning script
+│
 ├── Llama-3.2-3B/                  # Base Llama 3.2 3B Instruct model
-├── aavai_prompt_injection_lora/   # Saved LoRA checkpoints during training
-├── chat.py                        # CLI inference and chatting script
-├── datasetgen.py                  # Script to generate prompt injection data
-├── lora_maker.py                  # Main LoRA training script using Unsloth
-├── prompt_injection_dataset.jsonl # The dataset generated for fine-tuning
-├── requirements.txt               # Strict dependencies for local Windows GPU support
+├── requirements.txt               # Unified project requirements
 └── README.md
 ```
-
----
-
-## Development Roadmap
-
-### Phase 1
-
-* Prompt Injection LoRA
-* Vulnerable RAG Pipeline
-
-### Phase 2
-
-* System Prompt Leakage
-* Context Manipulation
-* Additional Prompt Injection Scenarios
-
-### Phase 3
-
-* Difficulty Levels
-* Interactive Learning Environment
-* Vulnerability Mitigation Modules
 
 ---
 
