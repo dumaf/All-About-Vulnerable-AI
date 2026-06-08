@@ -7,8 +7,6 @@ import torch
 
 MAX_SEQ_LENGTH = 2048
 
-# Load the model directly from your local directory!
-# No Hugging Face download or permission needed.
 model, tokenizer = FastLanguageModel.from_pretrained(
     model_name="./Llama-3.2-3B",
     max_seq_length=MAX_SEQ_LENGTH,

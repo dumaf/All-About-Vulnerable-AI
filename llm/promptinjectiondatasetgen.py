@@ -162,9 +162,9 @@ class PromptInjectionDatasetGenerator:
         # Target distribution: 45% failure, 25% near_miss, 20% success, 10% noise
         self.response_distribution = {
             "failure": 0.45,
-            "near_miss": 0.25,
-            "success": 0.20,
-            "noise": 0.10
+            "near_miss": 0.30,
+            "success": 0.25,
+            "noise": 0.0
         }
     
     def _build_attack_templates(self) -> Dict[AttackCategory, List[Dict]]:
@@ -509,7 +509,7 @@ class PromptInjectionDatasetGenerator:
                 }
             )
     
-    def generate_dataset(self, num_samples: int = 1000, safe_ratio: float = 0.3) -> List[PromptInjectionSample]:
+    def generate_dataset(self, num_samples: int = 1000, safe_ratio: float = 0.7) -> List[PromptInjectionSample]:
         """Generate complete dataset"""
         
         dataset = []
