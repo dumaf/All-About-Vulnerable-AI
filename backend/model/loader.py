@@ -2,16 +2,25 @@ import os
 import threading
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from ..config import LLM_MODEL_PATH
+from peft import PeftModel
+from ..config import (
+    LLM_MODEL_PATH, 
+    LLM_ADAPTER_1, 
+    LLM_ADAPTER_2,
+    LLM_WEIGHT_1,
+    LLM_WEIGHT_2,
+    LLM_WEIGHT_BASE
+)
+
 
 class LLMLoader:
     """
     Singleton class to manage background initialization and access to the local LLM.
-    Handles fallbacks gracefully if hardware or path limits prevent loading.
+    Uses transformers and PEFT for model loading with adapters.
     """
     def __init__(self):
-        self.model = None
         self.tokenizer = None
+        self.model = None
         self.loaded = False
         self.error_msg = None
         self._lock = threading.Lock()
@@ -25,22 +34,38 @@ class LLMLoader:
 
     def _load_model_task(self):
         try:
-            # Check model directory
-            if not os.path.exists(LLM_MODEL_PATH) or not os.listdir(LLM_MODEL_PATH):
-                raise FileNotFoundError(f"Model path '{LLM_MODEL_PATH}' is empty or does not exist.")
+            if not os.path.isdir(LLM_MODEL_PATH) and not os.path.isfile(os.path.join(LLM_MODEL_PATH, "config.json")):
+                raise FileNotFoundError(f"Model path not found at '{LLM_MODEL_PATH}'")
 
-            print(f"Loading local LLM from {LLM_MODEL_PATH}...")
-            
-            # Auto-detect CUDA availability
-            device_map = "auto" if torch.cuda.is_available() else "cpu"
-            torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-
-            self.tokenizer = AutoTokenizer.from_pretrained(LLM_MODEL_PATH)
-            self.model = AutoModelForCausalLM.from_pretrained(
+            print(f"Loading tokenizer and base model from {LLM_MODEL_PATH}...")
+            self.tokenizer = AutoTokenizer.from_pretrained(LLM_ADAPTER_1) # Tokenizer from fine-tuned path is safer
+            base_model = AutoModelForCausalLM.from_pretrained(
                 LLM_MODEL_PATH,
-                device_map=device_map,
-                torch_dtype=torch_dtype
+                torch_dtype=torch.bfloat16,
+                device_map="auto"
             )
+
+            print(f"Loading LoRA adapter 1: {LLM_ADAPTER_1}")
+            model = PeftModel.from_pretrained(base_model, LLM_ADAPTER_1, adapter_name="adapter1")
+
+            print(f"Loading LoRA adapter 2: {LLM_ADAPTER_2}")
+            model.load_adapter(LLM_ADAPTER_2, adapter_name="adapter2")
+
+            total = LLM_WEIGHT_1 + LLM_WEIGHT_2 + LLM_WEIGHT_BASE
+            w1 = LLM_WEIGHT_1 / total
+            w2 = LLM_WEIGHT_2 / total
+
+            print("Merging adapters...")
+            model.add_weighted_adapter(
+                adapters=["adapter1", "adapter2"],
+                weights=[w1, w2],
+                adapter_name="merged",
+                combination_type="linear"
+            )
+            model.set_adapter("merged")
+            model.eval()
+
+            self.model = model
             self.loaded = True
             print("Model loaded successfully!")
         except Exception as e:
@@ -49,27 +74,32 @@ class LLMLoader:
 
     def get_status(self):
         with self._lock:
-            return self.loaded, "Llama 3.2 3B Instruct" if self.loaded else None, self.error_msg
+            return self.loaded, "Llama 3.2 3B (PEFT Weighted)" if self.loaded else None, self.error_msg
 
     def generate(self, messages, max_new_tokens=512, temperature=0.7):
         if not self.loaded:
-            raise RuntimeError("Model is not loaded. Ensure LLM files are present in the llm/ folder.")
-        
-        # Apply chat template
-        prompt = self.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
+            raise RuntimeError("Model is not loaded. Check backend initialization output.")
+
+        prompt = self.tokenizer.apply_chat_template(
+            messages,
+            tokenize=False,
+            add_generation_prompt=True,
+        )
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
-        
+
         with torch.no_grad():
-            outputs = self.model.generate(
+            output = self.model.generate(
                 **inputs,
                 max_new_tokens=max_new_tokens,
+                do_sample=temperature > 0,
                 temperature=temperature,
-                do_sample=True if temperature > 0 else False,
-                pad_token_id=self.tokenizer.eos_token_id
+                pad_token_id=self.tokenizer.eos_token_id,
+                eos_token_id=self.tokenizer.eos_token_id,
             )
         
-        response_tokens = outputs[0][inputs.input_ids.shape[-1]:]
-        return self.tokenizer.decode(response_tokens, skip_special_tokens=True)
+        response_ids = output[0][inputs["input_ids"].shape[1]:]
+        return self.tokenizer.decode(response_ids, skip_special_tokens=True).strip()
+
 
 # Global Singleton instance
 llm_loader = LLMLoader()

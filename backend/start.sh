@@ -23,4 +23,4 @@ else
 fi
 
 export PYTHONPATH="$PROJECT_ROOT"
-python3 "$SCRIPT_DIR/app.py"
+cd "$PROJECT_ROOT" && python3 -m backend.app

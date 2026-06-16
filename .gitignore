@@ -1,11 +1,12 @@
 # Model Files and Cache Directories
 *.gguf
-Llama-3.2-3B/
-prompt_injection_lora/
-prompt_injection_lora_gguf/
-aavai_prompt_injection_lora/
+Llama-3.2-3B-Instruct/
+lora-*
 unsloth_compiled_cache/
 *.jsonl
+*.json
+.env
+
 
 # Python Virtual Environments
 venv/

@@ -10,12 +10,18 @@ transformers>=4.45.0
 accelerate>=0.34.0
 peft>=0.12.0
 bitsandbytes>=0.43.3
-numpy>=2.0.0
-pyarrow>=21.0.0
+numpy>=1.26.0
+pyarrow>=14.0.0
 datasets>=3.4.1,<4.4.0
 trl>=0.11.0
 huggingface_hub
 safetensors
-# llama-cpp-python
-ollama
+llama-cpp-python
+python-dotenv
+flask
+flask-cors
+faiss-cpu
+PyPDF2
+sentence-transformers
+
 unsloth

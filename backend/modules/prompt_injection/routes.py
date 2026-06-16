@@ -1,7 +1,7 @@
 import os
 from flask import Blueprint, request, jsonify
 from ...model.loader import llm_loader
-from .guardrails import run_input_guardrails, run_output_guardrails
+
 
 prompt_injection_bp = Blueprint('prompt_injection', __name__)
 
@@ -32,15 +32,6 @@ def chat():
             "error": f"Model is not loaded: {err}"
         }), 200
 
-    # Run input defense guardrails
-    safe, guard_err = run_input_guardrails(message)
-    if not safe:
-        return jsonify({
-            "response": guard_err,
-            "model_available": True,
-            "error": "Input blocked by security policy."
-        }), 200
-
     # Build prompt messages dynamically per-request
     messages = []
     
@@ -67,11 +58,8 @@ def chat():
     try:
         response_text = llm_loader.generate(messages)
         
-        # Run output filters
-        _, final_response = run_output_guardrails(response_text)
-
         return jsonify({
-            "response": final_response,
+            "response": response_text,
             "model_available": True
         }), 200
     except Exception as e:
