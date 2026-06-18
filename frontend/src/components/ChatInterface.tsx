@@ -3,9 +3,9 @@ import { Send, Terminal, ShieldAlert } from 'lucide-react'
 import type { ChatMessage, ContextChunk } from '../types'
 
 interface ChatInterfaceProps {
-  messages:     ChatMessage[]
+  messages: ChatMessage[]
   onSendMessage: (msg: string) => void
-  loading:      boolean
+  loading: boolean
 }
 
 export default function ChatInterface({ messages, onSendMessage, loading }: ChatInterfaceProps) {
@@ -38,9 +38,8 @@ export default function ChatInterface({ messages, onSendMessage, loading }: Chat
           messages.map(msg => (
             <div
               key={msg.id}
-              className={`flex flex-col gap-1 max-w-[85%] animate-fade-in ${
-                msg.role === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'
-              }`}
+              className={`flex flex-col gap-1 max-w-[85%] animate-fade-in ${msg.role === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'
+                }`}
             >
               <div className="flex items-center gap-2 text-xs text-muted font-mono">
                 <span>{msg.role === 'user' ? 'USER' : 'AI'}</span>
@@ -49,9 +48,8 @@ export default function ChatInterface({ messages, onSendMessage, loading }: Chat
               </div>
 
               <div
-                className={`px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap ${
-                  msg.role === 'user' ? 'bubble-user' : 'bubble-ai'
-                } ${msg.error ? 'border-red/30 bg-red/5 text-red-400' : 'text-primary'}`}
+                className={`px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap select-text cursor-text ${msg.role === 'user' ? 'bubble-user' : 'bubble-ai'
+                  } ${msg.error ? 'border-red/30 bg-red/5 text-red-400' : 'text-primary'}`}
               >
                 {msg.content}
               </div>

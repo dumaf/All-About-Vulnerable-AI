@@ -3,14 +3,15 @@ import { Upload, Trash2, FileText, Loader2 } from 'lucide-react'
 import type { Document } from '../types'
 
 interface DocumentUploadProps {
-  documents:         Document[]
-  onUpload:          (file: File) => Promise<void>
-  onDelete:          (name: string) => Promise<void>
+  documents: Document[]
+  onUpload: (file: File) => Promise<void>
+  onDelete: (name: string) => Promise<void>
   refreshDocuments: () => void
 }
 
 export default function DocumentUpload({ documents, onUpload, onDelete, refreshDocuments }: DocumentUploadProps) {
   const [uploading, setUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState<string | null>(null)
   const [dragActive, setDragActive] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -29,28 +30,35 @@ export default function DocumentUpload({ documents, onUpload, onDelete, refreshD
     e.preventDefault()
     e.stopPropagation()
     setDragActive(false)
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      await processFile(e.dataTransfer.files[0])
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      await processFiles(Array.from(e.dataTransfer.files))
     }
   }
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      await processFile(e.target.files[0])
+    if (e.target.files && e.target.files.length > 0) {
+      await processFiles(Array.from(e.target.files))
+      // Reset so the same file can be re-selected
+      e.target.value = ''
     }
   }
 
-  const processFile = async (file: File) => {
+  const processFiles = async (files: File[]) => {
     setError(null)
     setUploading(true)
-    try {
-      await onUpload(file)
-      refreshDocuments()
-    } catch (err: any) {
-      setError(err.response?.data?.error || err.message || "Failed to upload file")
-    } finally {
-      setUploading(false)
+    const errors: string[] = []
+    for (let i = 0; i < files.length; i++) {
+      setUploadProgress(`Uploading ${i + 1} / ${files.length}: ${files[i].name}`)
+      try {
+        await onUpload(files[i])
+      } catch (err: any) {
+        errors.push(`${files[i].name}: ${err.response?.data?.error || err.message || 'Upload failed'}`)
+      }
     }
+    refreshDocuments()
+    setUploading(false)
+    setUploadProgress(null)
+    if (errors.length > 0) setError(errors.join('\n'))
   }
 
   return (
@@ -68,27 +76,29 @@ export default function DocumentUpload({ documents, onUpload, onDelete, refreshD
           onDragLeave={handleDrag}
           onDrop={handleDrop}
           onClick={() => fileInputRef.current?.click()}
-          className={`border border-dashed p-6 text-center cursor-pointer transition-colors flex flex-col items-center justify-center min-h-[120px] ${
-            dragActive ? 'border-cyan bg-cyan/5' : 'border-white/10 hover:border-white/20'
-          }`}
+          className={`border border-dashed p-6 text-center cursor-pointer transition-colors flex flex-col items-center justify-center min-h-[120px] ${dragActive ? 'border-cyan bg-cyan/5' : 'border-white/10 hover:border-white/20'
+            }`}
         >
           <input
             ref={fileInputRef}
             type="file"
             accept=".pdf,.txt"
+            multiple
             onChange={handleFileChange}
             className="hidden"
           />
           {uploading ? (
             <>
               <Loader2 className="animate-spin text-cyan mb-2" size={24} />
-              <span className="text-xs text-cyan font-mono">Indexing document...</span>
+              <span className="text-xs text-cyan font-mono">
+                {uploadProgress ?? 'Indexing...'}
+              </span>
             </>
           ) : (
             <>
               <Upload className="text-muted mb-2" size={20} />
-              <span className="text-xs text-primary font-mono block">Drop PDF or TXT here</span>
-              <span className="text-[10px] text-muted font-mono mt-1">or click to browse</span>
+              <span className="text-xs text-primary font-mono block">Drop PDF or TXT files here</span>
+              <span className="text-[10px] text-muted font-mono mt-1">or click to browse (multi-select supported)</span>
             </>
           )}
         </div>

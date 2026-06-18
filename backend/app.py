@@ -6,10 +6,13 @@ from .modules.rag_poisoning.routes import rag_poisoning_bp
 from .model.loader import llm_loader
 
 def create_app():
-    app = Flask(__name__)
-    CORS(app)  # Enable Cross-Origin Resource Sharing for frontend calls
+    # Load LLM synchronously before starting Flask — must complete before
+    # any requests are accepted.
+    llm_loader.initialize()
 
-    # Register modular Blueprints
+    app = Flask(__name__)
+    CORS(app)
+
     app.register_blueprint(prompt_injection_bp, url_prefix='/api/prompt-injection')
     app.register_blueprint(rag_poisoning_bp, url_prefix='/api/rag-poisoning')
 
@@ -29,7 +32,7 @@ def create_app():
     return app
 
 if __name__ == '__main__':
-    # Initialize the model loader background thread
-    llm_loader.initialize()
     app = create_app()
-    app.run(host=HOST, port=PORT, debug=DEBUG)
+    # use_reloader=False prevents Flask debug mode from spawning a second process
+    # that would trigger a duplicate model load.
+    app.run(host=HOST, port=PORT, debug=DEBUG, use_reloader=False)

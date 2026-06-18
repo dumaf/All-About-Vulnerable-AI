@@ -1,5 +1,4 @@
 import os
-import threading
 import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
@@ -15,22 +14,19 @@ from ..config import (
 
 class LLMLoader:
     """
-    Singleton class to manage background initialization and access to the local LLM.
-    Uses transformers and PEFT for model loading with adapters.
+    Singleton class to manage initialization and access to the local LLM.
+    Loads synchronously at startup — Flask only starts after the model is ready.
     """
     def __init__(self):
         self.tokenizer = None
         self.model = None
         self.loaded = False
         self.error_msg = None
-        self._lock = threading.Lock()
-        self._init_thread = None
 
     def initialize(self):
-        with self._lock:
-            if self._init_thread is None and not self.loaded:
-                self._init_thread = threading.Thread(target=self._load_model_task, daemon=True)
-                self._init_thread.start()
+        """Load model synchronously."""
+        if not self.loaded:
+            self._load_model_task()
 
     def _load_model_task(self):
         try:
@@ -73,8 +69,7 @@ class LLMLoader:
             print(f"Error loading model: {e}")
 
     def get_status(self):
-        with self._lock:
-            return self.loaded, "Llama 3.2 3B (PEFT Weighted)" if self.loaded else None, self.error_msg
+        return self.loaded, "Llama 3.2 3B (PEFT Weighted)" if self.loaded else None, self.error_msg
 
     def generate(self, messages, max_new_tokens=512, temperature=0.7):
         if not self.loaded:
@@ -85,6 +80,11 @@ class LLMLoader:
             tokenize=False,
             add_generation_prompt=True,
         )
+
+        print("=" * 80, flush=True)
+        print("FINAL PROMPT SENT TO MODEL:", flush=True)
+        print(prompt, flush=True)
+        print("=" * 80, flush=True)
         inputs = self.tokenizer(prompt, return_tensors="pt").to(self.model.device)
 
         with torch.no_grad():

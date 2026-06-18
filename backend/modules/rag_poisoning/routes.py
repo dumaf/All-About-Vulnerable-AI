@@ -54,8 +54,10 @@ def chat():
         }), 200
 
     system_prompt = _load_system_prompt()
-    if context_text:
-        system_prompt = f"{system_prompt}\n\nRelevant context:\n{context_text}"
+
+    messages: list[dict] = []
+    if system_prompt:
+        messages.append({"role": "system", "content": system_prompt})
 
     messages: list[dict] = []
     if system_prompt:
@@ -66,7 +68,12 @@ def chat():
         if role in ("user", "assistant"):
             messages.append({"role": role, "content": turn.get("content", "")})
 
-    messages.append({"role": "user", "content": message})
+    # Prepend context to the user message if available
+    final_user_content = message
+    if context_text:
+        final_user_content = f"CONTEXT:\n{context_text}\n\nUSER QUESTION: {message}"
+
+    messages.append({"role": "user", "content": final_user_content})
 
     try:
         response_text = llm_loader.generate(messages)
