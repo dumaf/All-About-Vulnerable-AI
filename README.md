@@ -166,65 +166,56 @@ The model was selected because it provides a balance between performance, hardwa
 ## Architecture Diagram
 
 ```mermaid
-flowchart TB
-    subgraph Frontend["Frontend (React 18 + TypeScript + Vite 6)"]
-        Home["/ – Home Dashboard"]
-        PI["/prompt-injection – ChatInterface"]
-        RP["/rag-poisoning – ChatInterface + DocumentUpload"]
-        Theme["ThemeContext (dark/light)"]
+flowchart LR
+
+    subgraph Frontend
+        Home["Home"]
+        PI["Prompt Injection"]
+        RAG["RAG Poisoning"]
     end
 
-    subgraph Backend["Backend (Flask)"]
-        App["app.py – create_app()"]
-        Status["GET /api/status"]
-        subgraph PI_Mod["Prompt Injection Module"]
-            PI_Routes["routes.py /chat"]
-            PI_SP["system_prompt.txt<br/>(FLAG{PR0MPT_1NJ3CT10N_SUCC3SS})"]
+    subgraph Backend
+        API["Flask API"]
+
+        subgraph PI_Mod["Prompt Injection"]
+            PI_Routes["/chat"]
+            PI_SP["System Prompt"]
         end
-        subgraph RAG_Mod["RAG Poisoning Module"]
-            RAG_Routes["routes.py<br/>/chat /upload /documents"]
-            Pipeline["pipeline.py – RAGPipeline"]
-            FAISS["faiss_index/index.faiss"]
-            DocStore["document_store/"]
-            RAG_SP["system_prompt.txt<br/>(secret: 1_am_th3_AI)"]
+
+        subgraph RAG_Mod["RAG Pipeline"]
+            RAG_Routes["/chat /upload"]
+            VectorDB["FAISS Index"]
+            Docs["Document Store"]
+            RAG_SP["System Prompt"]
         end
-        LLM_Loader["model/loader.py – LLMLoader"]
+
+        LLM["LLM Loader"]
     end
 
-    subgraph LLM["LLM Layer"]
-        Base["Llama 3.2 3B Instruct"]
-        Adapter1["lora-grounding-output<br/>(factual following)"]
-        Adapter2["lora-aavai-output<br/>(prompt injection refusal)"]
-        Merged["Weighted Linear Merge<br/>w1=0.2 / w2=0.4 / base=0.4"]
+    subgraph Model
+        Base["Llama 3.2 3B"]
+        LoRA1["Grounding LoRA"]
+        LoRA2["Injection Defense LoRA"]
+        Merge["Merged Model"]
     end
 
-    subgraph Training["Training Pipeline"]
-        DS1["grouding_datasetgen.py<br/>→ grounding_dataset.json<br/>(1,500+ examples, 11 categories)"]
-        DS2["new_aavai_dataset.json<br/>(8,600+ prompt injection examples)"]
-        Train1["trainlora_grounding.py<br/>→ lora-grounding-output"]
-        Train2["trainlora_prompt.py<br/>→ lora-aavai-output"]
-    end
+    Frontend --> API
 
-    subgraph RAG_Internal["RAG Internals"]
-        Embed["sentence-transformers<br/>all-MiniLM-L6-v2"]
-        Chunk["Sliding window<br/>chunk_size=500 overlap=50"]
-        Search["FAISS IndexFlatL2<br/>top_k=3 retrieval"]
-    end
+    API --> PI_Routes
+    API --> RAG_Routes
 
-    Home --> PI & RP
-    PI --> PI_Routes
-    RP --> RAG_Routes
-    RAG_Routes --> Pipeline
-    Pipeline --> Embed --> Chunk --> FAISS & DocStore
-    PI_Routes --> LLM_Loader
-    RAG_Routes --> LLM_Loader
-    LLM_Loader --> Base --> Adapter1 & Adapter2 --> Merged
-    DS1 --> Train1 --> Adapter1
-    DS2 --> Train2 --> Adapter2
     PI_Routes --> PI_SP
+    PI_Routes --> LLM
+
+    RAG_Routes --> VectorDB
+    RAG_Routes --> Docs
     RAG_Routes --> RAG_SP
-    Status --> LLM_Loader
-    Frontend -->|axios /api/*| App
+    RAG_Routes --> LLM
+
+    LLM --> Merge
+    Base --> Merge
+    LoRA1 --> Merge
+    LoRA2 --> Merge
 ```
 
 The platform exposes two primary attack surfaces:
