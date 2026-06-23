@@ -55,9 +55,9 @@ The adapters are loaded via PEFT's `add_weighted_adapter` with `combination_type
 
 The adapter outputs are trained separately:
 
-- **`trainlora_grounding.py`** — Trains the grounding adapter on ~1,500 examples across 11 categories (instruction following, system override, context retrieval, exact copying, normal conversation, multi-turn memory, summarization, negative retrieval, identity grounding, hidden config retrieval, system prompt retrieval).
+- **`trainlora_grounding.py`** — Trains the grounding adapter on ~1,500 examples.
 
-- **`trainlora_prompt.py`** — Trains the prompt injection refusal adapter on ~8,600 attack scenarios. By default, `leak` examples are excluded to prevent the model from learning to divulge secrets. The `refuse` class is up-weighted to compensate for class imbalance (safe:refuse = 331:69).
+- **`trainlora_prompt.py`** — Trains the prompt injection refusal adapter on ~8,600 attack scenarios.
 
 ---
 
@@ -70,8 +70,6 @@ new_aavai_dataset.json   ──→                       ──→ trainlora_pro
                                                                                       └── final_adapter/
 ```
 
-- **Dataset generation**: `llm/grouding_datasetgen.py` procedurally generates a diverse dataset of system-prompt-grounded conversations with synthetic project data, code words, identifiers, and distractor facts.
-- **Attack dataset**: `llm/new_aavai_dataset.json` contains 8,600+ hand-crafted prompt injection scenarios covering memory extraction, role override, RAG context extraction, and system prompt retrieval attacks.
 - **Training**: Both LoRA scripts use PEFT with `r=8`, `alpha=16`, `dropout=0.05`, target attention + MLP projections, cosine LR schedule, and early stopping.
 - **Outputs**: Adapters are saved in PEFT format under `llm/lora-{grounding,aavai}-output/final_adapter/`.
 
@@ -94,17 +92,6 @@ User Upload (PDF/TXT) → Text Extraction → Sliding-Window Chunking
 - **Retrieval**: Top-K=3 chunks are prepended to the user message with `[Document: name]` markers.
 - **Deletion**: FAISS index is rebuilt from scratch when documents are removed (IndexFlatL2 does not support direct deletion).
 
-### Guards & System Prompts
-
-| Module | System Prompt Location | Secret/Flag |
-|---|---|---|
-| Prompt Injection | `backend/modules/prompt_injection/system_prompt.txt` | `FLAG{PR0MPT_1NJ3CT10N_SUCC3SS}` |
-| RAG Poisoning | `backend/modules/rag_poisoning/system_prompt.txt` | `1_am_th3_AI` |
-
-The agents are instructed to never disclose their system code, while RAG documents explicitly state they should be followed as authoritative instructions — creating the poisoning attack surface.
-
----
-
 ## Model Used
 
 **Current Model**
@@ -112,13 +99,6 @@ The agents are instructed to never disclose their system code, while RAG documen
 * Llama 3.2 3B Instruct
 
 The model was selected because it provides a balance between performance, hardware requirements, and local deployment feasibility.
-
-**Future Support**
-
-* Llama 3.1
-* Gemma
-* Qwen
-* Phi
 
 ---
 
@@ -168,54 +148,53 @@ The model was selected because it provides a balance between performance, hardwa
 ```mermaid
 flowchart LR
 
-    subgraph Frontend
-        Home["Home"]
-        PI["Prompt Injection"]
-        RAG["RAG Poisoning"]
+subgraph Frontend
+    Home["Home"]
+    PI["Prompt Injection"]
+    RAG["RAG Poisoning"]
+end
+
+subgraph Backend
+    API["Flask API"]
+
+    subgraph PI_Mod
+        PI_Routes["chat"]
+        PI_SP["System Prompt"]
     end
 
-    subgraph Backend
-        API["Flask API"]
-
-        subgraph PI_Mod["Prompt Injection"]
-            PI_Routes["/chat"]
-            PI_SP["System Prompt"]
-        end
-
-        subgraph RAG_Mod["RAG Pipeline"]
-            RAG_Routes["/chat /upload"]
-            VectorDB["FAISS Index"]
-            Docs["Document Store"]
-            RAG_SP["System Prompt"]
-        end
-
-        LLM["LLM Loader"]
+    subgraph RAG_Mod
+        RAG_Routes["chat, upload"]
+        VectorDB["FAISS Index"]
+        Docs["Document Store"]
+        RAG_SP["System Prompt"]
     end
 
-    subgraph Model
-        Base["Llama 3.2 3B"]
-        LoRA1["Grounding LoRA"]
-        LoRA2["Injection Defense LoRA"]
-        Merge["Merged Model"]
-    end
+    LLM["LLM Loader"]
+end
 
-    Frontend --> API
+subgraph Model
+    Base["Llama 3.2 3B"]
+    LoRA1["Grounding LoRA"]
+    LoRA2["Injection Defense LoRA"]
+    Merge["Merged Model"]
+end
 
-    API --> PI_Routes
-    API --> RAG_Routes
+Frontend --> API
+API --> PI_Routes
+API --> RAG_Routes
 
-    PI_Routes --> PI_SP
-    PI_Routes --> LLM
+PI_Routes --> PI_SP
+PI_Routes --> LLM
 
-    RAG_Routes --> VectorDB
-    RAG_Routes --> Docs
-    RAG_Routes --> RAG_SP
-    RAG_Routes --> LLM
+RAG_Routes --> VectorDB
+RAG_Routes --> Docs
+RAG_Routes --> RAG_SP
+RAG_Routes --> LLM
 
-    LLM --> Merge
-    Base --> Merge
-    LoRA1 --> Merge
-    LoRA2 --> Merge
+LLM --> Merge
+Base --> Merge
+LoRA1 --> Merge
+LoRA2 --> Merge
 ```
 
 The platform exposes two primary attack surfaces:
@@ -230,8 +209,8 @@ The platform exposes two primary attack surfaces:
 Clone the repository:
 
 ```bash
-git clone https://github.com/<username>/AAVAI.git
-cd AAVAI
+git clone https://github.com/dumaf/All-About-Vulnerable-AI.git
+cd All-About-Vulnerable-AI
 ```
 
 Install dependencies:
