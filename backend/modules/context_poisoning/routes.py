@@ -3,7 +3,7 @@ from flask import Blueprint, request, jsonify
 from ...model.loader import llm_loader
 
 
-prompt_injection_bp = Blueprint('prompt_injection', __name__)
+context_poisoning_bp = Blueprint('context_poisoning', __name__)
 
 # Load the modular system prompt relative to this file
 SYS_PROMPT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "system_prompt.txt")
@@ -14,11 +14,12 @@ def load_system_prompt():
             return f.read().strip()
     return "You are a secure assistant."
 
-@prompt_injection_bp.route('/chat', methods=['POST'])
+@context_poisoning_bp.route('/chat', methods=['POST'])
 def chat():
     """
-    Prompt injection endpoint. Accepts a message and message history,
-    injects the modular system prompt, and retrieves generation from the local LLM.
+    Context poisoning endpoint. Accepts a message and message history.
+    This endpoint is stateless and processes the user-provided history directly,
+    permitting context manipulation/poisoning attacks.
     """
     data = request.json or {}
     message = data.get("message", "")
@@ -35,16 +36,15 @@ def chat():
     # Build prompt messages dynamically per-request
     messages = []
 
-    
     # Load and prepend fresh modular system prompt
     messages.append({
         "role": "system",
         "content": load_system_prompt()
     })
 
-    # Add historical messages (ignoring system role in history if any)
+    # Add historical messages (which could be edited / poisoned by the client)
     for msg in history:
-        if msg.get("role") in ["user", "assistant"]:
+        if msg.get("role") in ("user", "assistant"):
             messages.append({
                 "role": msg["role"],
                 "content": msg["content"]
@@ -58,7 +58,6 @@ def chat():
 
     try:
         response_text = llm_loader.generate(messages)
-        
         return jsonify({
             "response": response_text,
             "model_available": True

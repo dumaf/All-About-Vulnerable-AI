@@ -3,6 +3,7 @@ import { ThemeProvider } from './context/ThemeContext'
 import Home from './pages/Home'
 import PromptInjection from './pages/PromptInjection'
 import RagPoisoning from './pages/RagPoisoning'
+import ContextPoisoning from './pages/ContextPoisoning'
 
 export default function App() {
   return (
@@ -18,6 +19,7 @@ export default function App() {
               <Route path="/" element={<Home />} />
               <Route path="/prompt-injection" element={<PromptInjection />} />
               <Route path="/rag-poisoning" element={<RagPoisoning />} />
+              <Route path="/context-poisoning" element={<ContextPoisoning />} />
             </Routes>
           </div>
         </Router>

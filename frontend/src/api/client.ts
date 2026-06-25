@@ -24,6 +24,14 @@ export async function ragChat(
   return data
 }
 
+export async function contextPoisoningChat(
+  message: string,
+  history: { role: string; content: string }[]
+): Promise<ChatResponse> {
+  const { data } = await api.post('/context-poisoning/chat', { message, history })
+  return data
+}
+
 export async function uploadDocument(
   file: File,
   onProgress?: (pct: number) => void

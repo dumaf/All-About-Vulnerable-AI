@@ -42,6 +42,10 @@ export default function RagPoisoning() {
     loadData()
   }
 
+  const handleUpdateMessage = (id: string, newContent: string) => {
+    alert("Editing is not accepted in this module");
+  }
+
   const handleSendMessage = async (content: string) => {
     const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
     const userMsg: ChatMessage = {
@@ -119,6 +123,7 @@ export default function RagPoisoning() {
             messages={messages}
             onSendMessage={handleSendMessage}
             loading={loading}
+            onUpdateMessage={handleUpdateMessage}
           />
         </div>
 

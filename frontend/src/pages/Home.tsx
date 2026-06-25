@@ -58,7 +58,7 @@ export default function Home() {
         </div>
 
         {/* Challenge Cards Grid */}
-        <div className="grid md:grid-cols-2 gap-6 mb-12">
+        <div className="grid md:grid-cols-3 gap-6 mb-12">
           
           {/* Prompt Injection Card */}
           <div
@@ -96,6 +96,26 @@ export default function Home() {
               </p>
             </div>
             <div className="mt-8 flex items-center gap-1 text-[11px] font-mono text-cyan uppercase tracking-wider font-semibold">
+              Enter Module &rarr;
+            </div>
+          </div>
+
+          {/* Context Poisoning Card */}
+          <div
+            id="context-poisoning-card"
+            onClick={() => navigate('/context-poisoning')}
+            className="module-card glass cursor-pointer p-6 hover:border-green/40 transition-all flex flex-col justify-between group"
+          >
+            <div>
+              <div className="w-10 h-10 bg-green/10 border border-green/20 flex items-center justify-center text-green mb-5 group-hover:bg-green/20 transition-colors">
+                <HelpCircle size={20} />
+              </div>
+              <h3 className="font-mono text-base font-bold mb-2 text-primary">Context Poisoning</h3>
+              <p className="text-xs text-sub leading-relaxed font-mono">
+                Manipulate conversation history to influence model behavior. Edit prior messages to poison the context window.
+              </p>
+            </div>
+            <div className="mt-8 flex items-center gap-1 text-[11px] font-mono text-green uppercase tracking-wider font-semibold">
               Enter Module &rarr;
             </div>
           </div>

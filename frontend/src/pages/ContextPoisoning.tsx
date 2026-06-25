@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { promptInjectionChat, fetchStatus } from '../api/client'
+import { contextPoisoningChat, fetchStatus } from '../api/client'
 import type { ChatMessage, ModelStatus } from '../types'
 import NavBar from '../components/NavBar'
 import ModelStatusBanner from '../components/ModelStatusBanner'
 import ChatInterface from '../components/ChatInterface'
 
-export default function PromptInjection() {
+export default function ContextPoisoning() {
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [loading, setLoading] = useState(false)
   const [status, setStatus] = useState<ModelStatus>({
@@ -25,7 +25,9 @@ export default function PromptInjection() {
   }, [])
 
   const handleUpdateMessage = (id: string, newContent: string) => {
-    alert("Editing is not accepted in this module");
+    setMessages(prev => prev.map(msg =>
+      msg.id === id ? { ...msg, content: newContent } : msg
+    ))
   }
 
   const handleSendMessage = async (content: string) => {
@@ -41,13 +43,14 @@ export default function PromptInjection() {
     setLoading(true)
 
     // Build plain message objects required by Python backend API client
+    // This includes any messages that may have been edited by the user
     const apiHistory = messages.map(m => ({
       role: m.role,
       content: m.content
     }))
 
     try {
-      const response = await promptInjectionChat(content, apiHistory)
+      const response = await contextPoisoningChat(content, apiHistory)
       const aiTimeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
 
       const reply = response.response
@@ -83,7 +86,7 @@ export default function PromptInjection() {
 
   return (
     <div className="flex-1 flex flex-col h-full overflow-hidden">
-      <NavBar title="Prompt Injection Sandbox" subtitle="Direct Override" />
+      <NavBar title="Context Poisoning Sandbox" subtitle="History Manipulation" />
       <ModelStatusBanner status={status} />
       <ChatInterface
         messages={messages}

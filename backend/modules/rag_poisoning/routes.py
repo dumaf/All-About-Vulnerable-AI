@@ -59,10 +59,6 @@ def chat():
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
 
-    messages: list[dict] = []
-    if system_prompt:
-        messages.append({"role": "system", "content": system_prompt})
-
     for turn in history:
         role = turn.get("role", "")
         if role in ("user", "assistant"):
