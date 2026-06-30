@@ -10,6 +10,8 @@ export interface ModelStatus {
   model_loaded:  boolean
   model_name:    string | null
   error_message: string | null
+  rate?:         number
+  available?:    boolean
 }
 
 export interface Document {

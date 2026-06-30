@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShieldAlert, Database, HelpCircle, Sun, Moon } from 'lucide-react'
+import { ShieldAlert, Database, HelpCircle, Sun, Moon, Zap } from 'lucide-react'
 import { fetchStatus } from '../api/client'
 import { useTheme } from '../context/ThemeContext'
 import ModelStatusBanner from '../components/ModelStatusBanner'
@@ -58,8 +58,8 @@ export default function Home() {
         </div>
 
         {/* Challenge Cards Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+
           {/* Prompt Injection Card */}
           <div
             id="prompt-injection-card"
@@ -116,6 +116,26 @@ export default function Home() {
               </p>
             </div>
             <div className="mt-8 flex items-center gap-1 text-[11px] font-mono text-green uppercase tracking-wider font-semibold">
+              Enter Module &rarr;
+            </div>
+          </div>
+
+          {/* Model Denial of Service Card */}
+          <div
+            id="model-denial-of-service-card"
+            onClick={() => navigate('/model-denial-of-service')}
+            className="module-card glass cursor-pointer p-6 hover:border-red/40 transition-all flex flex-col justify-between group"
+          >
+            <div>
+              <div className="w-10 h-10 bg-red/10 border border-red/20 flex items-center justify-center text-red mb-5 group-hover:bg-red/20 transition-colors">
+                <Zap size={20} />
+              </div>
+              <h3 className="font-mono text-base font-bold mb-2 text-primary">Model DoS</h3>
+              <p className="text-xs text-sub leading-relaxed font-mono">
+                Flood the inference engine to trigger resource exhaustion. Test system behavior when request limits are exceeded.
+              </p>
+            </div>
+            <div className="mt-8 flex items-center gap-1 text-[11px] font-mono text-red uppercase tracking-wider font-semibold">
               Enter Module &rarr;
             </div>
           </div>

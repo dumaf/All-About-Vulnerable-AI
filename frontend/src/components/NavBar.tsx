@@ -5,9 +5,10 @@ import { useTheme } from '../context/ThemeContext'
 interface NavBarProps {
   title:     string
   subtitle?: string
+  available?: boolean
 }
 
-export default function NavBar({ title, subtitle }: NavBarProps) {
+export default function NavBar({ title, subtitle, available = true }: NavBarProps) {
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
 
@@ -32,7 +33,10 @@ export default function NavBar({ title, subtitle }: NavBarProps) {
 
       <div className="ml-auto flex items-center gap-3">
         <span className="text-xs text-muted font-mono">AAVAI</span>
-        <div className="w-1.5 h-1.5 bg-green animate-pulse-slow" />
+        <div className={`w-1.5 h-1.5 rounded-full animate-pulse-slow ${available ? 'bg-green' : 'bg-red'}`} />
+        <span className={`text-[10px] font-mono uppercase tracking-wider ${available ? 'text-green' : 'text-red-400'}`}>
+          {available ? 'Available' : 'Unavailable'}
+        </span>
         <button
           id="nav-theme-toggle"
           onClick={toggle}

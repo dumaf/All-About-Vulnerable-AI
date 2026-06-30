@@ -55,3 +55,16 @@ export async function fetchDocuments(): Promise<Document[]> {
 export async function deleteDocument(name: string): Promise<void> {
   await api.delete(`/rag-poisoning/documents/${encodeURIComponent(name)}`)
 }
+
+export async function fetchDosStatus(): Promise<ModelStatus> {
+  const { data } = await api.get('/model-denial-of-service/status')
+  return data
+}
+
+export async function dosChat(
+  message: string,
+  history: { role: string; content: string }[]
+): Promise<ChatResponse> {
+  const { data } = await api.post('/model-denial-of-service/chat', { message, history })
+  return data
+}
