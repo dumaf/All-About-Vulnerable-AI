@@ -197,12 +197,18 @@ LoRA1 --> Merge
 LoRA2 --> Merge
 ```
 
-The platform exposes two primary attack surfaces:
+## Vulnerability Mapping
 
-1. **Prompt Injection** — Direct override of system prompts to extract hidden flags
-2. **RAG Poisoning** — Indirect injection via poisoned documents in the vector store
+AAVAI implements multiple security challenges based on the OWASP Top 10 for Large Language Model Applications, allowing users to explore how these vulnerabilities arise in real-world AI systems.
 
----
+| Implemented Module | OWASP Top 10 Category | Description |
+|--------------------|-----------------------|-------------|
+| **Prompt Injection** | **LLM01 – Prompt Injection** | Demonstrates how carefully crafted prompts can manipulate model behavior, override system instructions, or extract protected information. |
+| **Supply Chain Attack (RAG Poisoning)** | **LLM05 – Supply Chain Vulnerabilities** | Demonstrates how compromising a trusted knowledge source can poison a Retrieval-Augmented Generation (RAG) pipeline. Malicious content is ingested from an upstream source and later influences model behaviour during retrieval. |
+| **Context Poisoning** | **LLM10 – Prompt Injection (Persistent Context Manipulation)** | Shows how malicious information stored in conversation history can influence future model responses and alter the assistant's behavior across multiple turns. |
+| **Model Denial of Service** | **LLM04 – Unbounded Consumption** | Simulates resource exhaustion attacks where excessive requests degrade or interrupt model availability, illustrating the importance of rate limiting and resource management. |
+| **Sensitive Information Disclosure** | **LLM06 – Sensitive Information Disclosure** | Demonstrates how secrets, internal prompts, credentials, or other confidential information can be unintentionally exposed through unsafe prompting or application design. |
+
 
 ## Installation & Running
 

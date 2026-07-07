@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShieldAlert, Database, HelpCircle, Sun, Moon, Zap } from 'lucide-react'
+import { ShieldAlert, Database, HelpCircle, Sun, Moon, Zap, DatabaseZap } from 'lucide-react'
 import { fetchStatus } from '../api/client'
 import { useTheme } from '../context/ThemeContext'
 import ModelStatusBanner from '../components/ModelStatusBanner'
@@ -58,7 +58,7 @@ export default function Home() {
         </div>
 
         {/* Challenge Cards Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
 
           {/* Prompt Injection Card */}
           <div
@@ -136,6 +136,26 @@ export default function Home() {
               </p>
             </div>
             <div className="mt-8 flex items-center gap-1 text-[11px] font-mono text-red uppercase tracking-wider font-semibold">
+              Enter Module &rarr;
+            </div>
+          </div>
+
+          {/* Sensitive Info Disclosure Card */}
+          <div
+            id="sensitive-info-card"
+            onClick={() => navigate('/sensitive-info')}
+            className="module-card glass cursor-pointer p-6 hover:border-purple-400/40 transition-all flex flex-col justify-between group"
+          >
+            <div>
+              <div className="w-10 h-10 bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 mb-5 group-hover:bg-purple-500/20 transition-colors">
+                <DatabaseZap size={20} />
+              </div>
+              <h3 className="font-mono text-base font-bold mb-2 text-primary">Sensitive Info Disclosure</h3>
+              <p className="text-xs text-sub leading-relaxed font-mono">
+                Jailbreak a database-connected LLM agent to extract classified records, password hashes, and hidden flags.
+              </p>
+            </div>
+            <div className="mt-8 flex items-center gap-1 text-[11px] font-mono text-purple-400 uppercase tracking-wider font-semibold">
               Enter Module &rarr;
             </div>
           </div>

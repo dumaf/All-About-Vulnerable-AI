@@ -68,3 +68,11 @@ export async function dosChat(
   const { data } = await api.post('/model-denial-of-service/chat', { message, history })
   return data
 }
+
+export async function sensitiveInfoChat(
+  message: string,
+  history: { role: string; content: string }[]
+): Promise<ChatResponse> {
+  const { data } = await api.post('/sensitive-info/chat', { message, history })
+  return data
+}

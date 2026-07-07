@@ -4,6 +4,7 @@ from .config import HOST, PORT, DEBUG
 from .modules.prompt_injection.routes import prompt_injection_bp
 from .modules.rag_poisoning.routes import rag_poisoning_bp
 from .modules.context_poisoning.routes import context_poisoning_bp
+from .modules.sensitive_info.routes import sensitive_info_bp
 from .model.loader import llm_loader
 
 def create_app():
@@ -17,6 +18,7 @@ def create_app():
     app.register_blueprint(prompt_injection_bp, url_prefix='/api/prompt-injection')
     app.register_blueprint(rag_poisoning_bp, url_prefix='/api/rag-poisoning')
     app.register_blueprint(context_poisoning_bp, url_prefix='/api/context-poisoning')
+    app.register_blueprint(sensitive_info_bp, url_prefix='/api/sensitive-info')
 
     @app.route('/api/status', methods=['GET'])
     def get_status():

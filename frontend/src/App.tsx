@@ -5,6 +5,7 @@ import PromptInjection from './pages/PromptInjection'
 import RagPoisoning from './pages/RagPoisoning'
 import ContextPoisoning from './pages/ContextPoisoning'
 import ModelDenialOfService from './pages/ModelDenialOfService'
+import SensitiveInformationDisclosure from './pages/SensitiveInformationDisclosure'
 
 export default function App() {
   return (
@@ -22,6 +23,7 @@ export default function App() {
               <Route path="/rag-poisoning" element={<RagPoisoning />} />
               <Route path="/context-poisoning" element={<ContextPoisoning />} />
               <Route path="/model-denial-of-service" element={<ModelDenialOfService />} />
+              <Route path="/sensitive-info" element={<SensitiveInformationDisclosure />} />
             </Routes>
           </div>
         </Router>

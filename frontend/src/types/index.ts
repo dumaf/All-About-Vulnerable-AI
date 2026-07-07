@@ -27,11 +27,17 @@ export interface ContextChunk {
   chunk_index: number
 }
 
+export interface SqlQueryLog {
+  query:  string
+  result: string
+}
+
 export interface ChatResponse {
   response:        string | null
   model_available: boolean
   error?:          string
   context_used?:   ContextChunk[]
+  sql_queries?:    SqlQueryLog[]
 }
 
 export interface UploadResponse {
