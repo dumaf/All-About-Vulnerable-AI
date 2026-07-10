@@ -5,6 +5,7 @@ from .modules.prompt_injection.routes import prompt_injection_bp
 from .modules.rag_poisoning.routes import rag_poisoning_bp
 from .modules.context_poisoning.routes import context_poisoning_bp
 from .modules.sensitive_info.routes import sensitive_info_bp
+from .modules.output_handling.routes import output_handling_bp
 from .model.loader import llm_loader
 
 def create_app():
@@ -19,6 +20,15 @@ def create_app():
     app.register_blueprint(rag_poisoning_bp, url_prefix='/api/rag-poisoning')
     app.register_blueprint(context_poisoning_bp, url_prefix='/api/context-poisoning')
     app.register_blueprint(sensitive_info_bp, url_prefix='/api/sensitive-info')
+    app.register_blueprint(output_handling_bp, url_prefix='/api/output-handling')
+
+    @app.route('/api/internal/flag', methods=['GET'])
+    def get_flag():
+        """
+        Vulnerable endpoint for the Output Handling challenge.
+        Returns the flag — only obtainable through a same-origin XSS payload.
+        """
+        return jsonify({"flag": "FLAG{OUTPUT_HANDLING_SUCCESS}"}), 200
 
     @app.route('/api/status', methods=['GET'])
     def get_status():

@@ -7,9 +7,10 @@ interface ChatInterfaceProps {
   onSendMessage: (msg: string) => void
   loading: boolean
   onUpdateMessage?: (id: string, newContent: string) => void
+  renderUnsafeHtml?: boolean
 }
 
-export default function ChatInterface({ messages, onSendMessage, loading, onUpdateMessage }: ChatInterfaceProps) {
+export default function ChatInterface({ messages, onSendMessage, loading, onUpdateMessage, renderUnsafeHtml }: ChatInterfaceProps) {
   const [input, setInput] = useState('')
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editContent, setEditContent] = useState('')
@@ -127,7 +128,11 @@ export default function ChatInterface({ messages, onSendMessage, loading, onUpda
                   className={`px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap select-text cursor-text ${msg.role === 'user' ? 'bubble-user' : 'bubble-ai'
                     } ${msg.error ? 'border-red/30 bg-red/5 text-red-400' : 'text-primary'}`}
                 >
-                  {msg.content}
+                  {renderUnsafeHtml && msg.role === 'assistant' ? (
+                    <div dangerouslySetInnerHTML={{ __html: msg.content }} />
+                  ) : (
+                    msg.content
+                  )}
                 </div>
               )}
             </div>

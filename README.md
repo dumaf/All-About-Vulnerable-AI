@@ -15,29 +15,6 @@ The project focuses on demonstrating real-world AI security risks including **Pr
 * Help learners understand both offensive and defensive AI security concepts.
 * Provide practical exposure to emerging threats documented by OWASP and MITRE ATLAS.
 
----
-
-## Features
-
-### Prompt Injection Vulnerability
-
-A LoRA adapter is trained to introduce controlled weaknesses into the model, making it susceptible to advanced prompt injection techniques such as:
-
-* Authority Impersonation
-* Maintenance Mode Requests
-* Audit Mode Requests
-* Social Engineering
-* Multi-Turn Manipulation
-
-### RAG Poisoning Vulnerability
-
-The platform includes a vulnerable Retrieval-Augmented Generation (RAG) pipeline that accepts user-uploaded documents.
-
-Malicious documents can be inserted into the knowledge base and later retrieved as context, demonstrating how poisoned content can influence model behavior.
-
-### Local Deployment
-
-All components run locally without requiring external APIs or cloud services.
 
 ---
 
@@ -205,9 +182,10 @@ AAVAI implements multiple security challenges based on the OWASP Top 10 for Larg
 |--------------------|-----------------------|-------------|
 | **Prompt Injection** | **LLM01 – Prompt Injection** | Demonstrates how carefully crafted prompts can manipulate model behavior, override system instructions, or extract protected information. |
 | **Supply Chain Attack (RAG Poisoning)** | **LLM05 – Supply Chain Vulnerabilities** | Demonstrates how compromising a trusted knowledge source can poison a Retrieval-Augmented Generation (RAG) pipeline. Malicious content is ingested from an upstream source and later influences model behaviour during retrieval. |
-| **Context Poisoning** | **LLM10 – Prompt Injection (Persistent Context Manipulation)** | Shows how malicious information stored in conversation history can influence future model responses and alter the assistant's behavior across multiple turns. |
+| **Context Poisoning** | **LLM10 – Persistent Context Manipulation** | Shows how malicious information stored in conversation history can influence future model responses and alter the assistant's behavior across multiple turns. |
 | **Model Denial of Service** | **LLM04 – Unbounded Consumption** | Simulates resource exhaustion attacks where excessive requests degrade or interrupt model availability, illustrating the importance of rate limiting and resource management. |
 | **Sensitive Information Disclosure** | **LLM06 – Sensitive Information Disclosure** | Demonstrates how secrets, internal prompts, credentials, or other confidential information can be unintentionally exposed through unsafe prompting or application design. |
+| **Insecure Output Handling** | **LLM02 – Insecure Output Handling** | Exploit unsafe HTML rendering of LLM output to execute XSS payloads. Convince the model to output a script payload to capture the flag. |
 
 
 ## Installation & Running
@@ -289,13 +267,25 @@ AAVAI/
 ├── backend/                       # Python Flask server
 │   ├── app.py                     # Entry point, CORS, blueprint registration
 │   ├── config.py                  # LLM paths, RAG params, upload settings
+│   ├── dos_app.py                 # Rate-limiting simulator for Model DoS challenge
 │   ├── start.sh                   # Virtualenv auto-detection + launch wrapper
+│   ├── start_dos.sh               # Startup wrapper for Model DoS backend
 │   ├── model/                     # Model loaders
 │   │   └── loader.py              # LLMLoader: dual LoRA init, weighted merge, generate
 │   └── modules/                   # Security challenges blueprints
 │       ├── prompt_injection/      # Direct injection sandbox
 │       │   ├── routes.py          # POST /chat
 │       │   └── system_prompt.txt  # Agent "Astro" with hidden FLAG
+│       ├── output_handling/       # Insecure output handling sandbox
+│       │   ├── routes.py          # POST /chat
+│       │   └── system_prompt.txt  # HTML generation assistant
+│       ├── context_poisoning/     # History manipulation sandbox
+│       │   ├── routes.py          # POST /chat
+│       │   └── system_prompt.txt  # Chat assistant with state simulation
+│       ├── sensitive_info/        # Sensitive info disclosure sandbox
+│       │   ├── db.py              # SQLite database and restricted query helper
+│       │   ├── routes.py          # POST /chat (LLM query execution loop)
+│       │   └── system_prompt.txt  # AcmeCorp data classification system prompt
 │       └── rag_poisoning/         # Indirect injection sandbox
 │           ├── document_store/    # Ingested PDF/TXT files
 │           ├── faiss_index/       # Vector storage (index.faiss)
@@ -312,7 +302,7 @@ AAVAI/
 │   ├── postcss.config.js          # PostCSS plugins
 │   └── src/                       # Client source code
 │       ├── main.tsx               # App entry point
-│       ├── App.tsx                # Router setup (/, /prompt-injection, /rag-poisoning)
+│       ├── App.tsx                # Router setup
 │       ├── index.css              # Glassmorphism & dot-grid theme styles
 │       ├── api/
 │       │   └── client.ts          # Axios HTTP client (status, chat, upload, documents)
@@ -328,7 +318,11 @@ AAVAI/
 │       └── pages/                 # View layouts
 │           ├── Home.tsx           # Dashboard with module selection cards
 │           ├── PromptInjection.tsx # Direct injection chat page
-│           └── RagPoisoning.tsx   # RAG chat + document sidebar + context inspector
+│           ├── RagPoisoning.tsx   # RAG chat + document sidebar + context inspector
+│           ├── ContextPoisoning.tsx # Context poisoning page
+│           ├── ModelDenialOfService.tsx # Model DoS simulation page
+│           ├── SensitiveInformationDisclosure.tsx # Sensitive info database query page
+│           └── VulnerableOutputHandling.tsx # Insecure output handling XSS page
 │
 ├── llm/                           # Local model adapters, training, and datasets
 │   ├── chat.py                    # Console chat utility with adapter switching

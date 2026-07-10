@@ -76,3 +76,11 @@ export async function sensitiveInfoChat(
   const { data } = await api.post('/sensitive-info/chat', { message, history })
   return data
 }
+
+export async function outputHandlingChat(
+  message: string,
+  history: { role: string; content: string }[]
+): Promise<ChatResponse> {
+  const { data } = await api.post('/output-handling/chat', { message, history })
+  return data
+}

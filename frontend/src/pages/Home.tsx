@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShieldAlert, Database, HelpCircle, Sun, Moon, Zap, DatabaseZap } from 'lucide-react'
+import { ShieldAlert, Database, HelpCircle, Sun, Moon, Zap, DatabaseZap, Code } from 'lucide-react'
 import { fetchStatus } from '../api/client'
 import { useTheme } from '../context/ThemeContext'
 import ModelStatusBanner from '../components/ModelStatusBanner'
@@ -156,6 +156,26 @@ export default function Home() {
               </p>
             </div>
             <div className="mt-8 flex items-center gap-1 text-[11px] font-mono text-purple-400 uppercase tracking-wider font-semibold">
+              Enter Module &rarr;
+            </div>
+          </div>
+
+          {/* Vulnerable Output Handling Card */}
+          <div
+            id="vulnerable-output-card"
+            onClick={() => navigate('/vulnerable-output')}
+            className="module-card glass cursor-pointer p-6 hover:border-yellow-400/40 transition-all flex flex-col justify-between group"
+          >
+            <div>
+              <div className="w-10 h-10 bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center text-yellow-400 mb-5 group-hover:bg-yellow-500/20 transition-colors">
+                <Code size={20} />
+              </div>
+              <h3 className="font-mono text-base font-bold mb-2 text-primary">Insecure Output Handling</h3>
+              <p className="text-xs text-sub leading-relaxed font-mono">
+                Exploit unsafe HTML rendering of LLM output to execute XSS payloads. Capture the flag via a same-origin request.
+              </p>
+            </div>
+            <div className="mt-8 flex items-center gap-1 text-[11px] font-mono text-yellow-400 uppercase tracking-wider font-semibold">
               Enter Module &rarr;
             </div>
           </div>
