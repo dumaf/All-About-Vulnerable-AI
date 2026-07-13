@@ -37,7 +37,8 @@ def get_status():
             "model_name": None,
             "error_message": f"Service Unavailable (HTTP 429: Too Many Requests) - Model Denial of Service attack detected. Cooling down for {cooldown_remaining}s.",
             "rate": rate,
-            "available": False
+            "available": False,
+            "flag": "FLAG{D0S_4TT4CK_SUCC3SS}"
         }), 200
     else:
         return jsonify({

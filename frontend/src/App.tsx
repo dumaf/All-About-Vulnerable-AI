@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { ThemeProvider } from './context/ThemeContext'
+import { ScoreProvider } from './context/ScoreContext'
 import Home from './pages/Home'
 import PromptInjection from './pages/PromptInjection'
 import RagPoisoning from './pages/RagPoisoning'
@@ -11,6 +12,7 @@ import VulnerableOutputHandling from './pages/VulnerableOutputHandling'
 export default function App() {
   return (
     <ThemeProvider>
+      <ScoreProvider>
       <div className="relative min-h-screen flex flex-col overflow-hidden bg-bg text-primary select-none">
         {/* Responsive dot background */}
         <div className="dot-grid" />
@@ -30,6 +32,7 @@ export default function App() {
           </div>
         </Router>
       </div>
+      </ScoreProvider>
     </ThemeProvider>
   )
 }

@@ -4,7 +4,11 @@ import type { ChatMessage, ModelStatus } from '../types'
 import NavBar from '../components/NavBar'
 import ModelStatusBanner from '../components/ModelStatusBanner'
 import ChatInterface from '../components/ChatInterface'
+import ScoringPanel from '../components/ScoringPanel'
+import { useScore } from '../context/ScoreContext'
 import { Lock, Flag, CheckCircle2 } from 'lucide-react'
+
+const CHALLENGE_ID = 'output-handling'
 
 declare global {
   interface Window {
@@ -22,6 +26,12 @@ export default function VulnerableOutputHandling() {
     model_name: null,
     error_message: null
   })
+  const { setActiveChallenge, incrementQueries } = useScore()
+
+  useEffect(() => {
+    setActiveChallenge(CHALLENGE_ID)
+    return () => setActiveChallenge(null)
+  }, [setActiveChallenge])
 
   // Expose the global callback that the XSS payload will call
   const handleChallengeComplete = useCallback((flag: string) => {
@@ -63,6 +73,7 @@ export default function VulnerableOutputHandling() {
 
     setMessages(prev => [...prev, userMsg])
     setLoading(true)
+    incrementQueries(CHALLENGE_ID)
 
     const apiHistory = messages.map(m => ({
       role: m.role,
@@ -134,76 +145,80 @@ export default function VulnerableOutputHandling() {
         </div>
 
         {/* ── Right Sidebar ─────────────────────────────────────── */}
-        <div className="w-[380px] flex flex-col bg-surface overflow-y-auto p-5 space-y-5">
+        <div className="w-[380px] flex flex-col bg-surface overflow-y-auto">
+          <ScoringPanel challengeId={CHALLENGE_ID} />
+
           {/* Vulnerability Explanation */}
-          <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Lock size={13} className="text-orange" />
-              <h3 className="font-mono text-sm font-bold text-primary uppercase tracking-wider">
-                Vulnerability Explanation
-              </h3>
-            </div>
-            <p className="text-xs text-sub leading-relaxed font-mono">
-              <strong className="text-primary">LLM02 — Insecure Output Handling</strong> occurs when an
-              application renders LLM-generated content without sanitization. If the model produces HTML
-              containing JavaScript, and the frontend blindly injects it via <code className="text-cyan">dangerouslySetInnerHTML</code>,
-              the script executes in the user's browser context.
-            </p>
-            <p className="text-xs text-sub leading-relaxed font-mono mt-3">
-              In this sandbox, the AI assistant is configured to output raw HTML. The frontend deliberately
-              renders assistant responses as unsanitized HTML — creating a cross-site scripting (XSS) surface.
-            </p>
-            <p className="text-xs text-sub leading-relaxed font-mono mt-3">
-              Your goal: convince the model to produce HTML with a JavaScript payload that fetches the flag
-              from <code className="text-cyan">/api/internal/flag</code> and calls{' '}
-              <code className="text-cyan">window.markChallengeComplete(flag)</code>.
-            </p>
-          </div>
-
-          {/* Challenge Objective */}
-          <div className="border-t border-white/[0.05] pt-5">
-            <div className="flex items-center gap-2 mb-3">
-              <Flag size={13} className="text-cyan" />
-              <h3 className="font-mono text-sm font-bold text-primary uppercase tracking-wider">
-                Challenge Objective
-              </h3>
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-start gap-2 text-xs font-mono text-sub">
-                <span className="text-muted shrink-0 mt-px">1.</span>
-                <span>Convince the AI to generate HTML containing a <code className="text-cyan">&lt;script&gt;</code> or event-handler payload.</span>
+          <div className="p-5 space-y-5">
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Lock size={13} className="text-orange" />
+                <h3 className="font-mono text-sm font-bold text-primary uppercase tracking-wider">
+                  Vulnerability Explanation
+                </h3>
               </div>
-              <div className="flex items-start gap-2 text-xs font-mono text-sub">
-                <span className="text-muted shrink-0 mt-px">2.</span>
-                <span>The payload should fetch <code className="text-cyan">/api/internal/flag</code> (same-origin GET).</span>
-              </div>
-              <div className="flex items-start gap-2 text-xs font-mono text-sub">
-                <span className="text-muted shrink-0 mt-px">3.</span>
-                <span>Extract the <code className="text-cyan">flag</code> field from the JSON response.</span>
-              </div>
-              <div className="flex items-start gap-2 text-xs font-mono text-sub">
-                <span className="text-muted shrink-0 mt-px">4.</span>
-                <span>Call <code className="text-cyan">window.markChallengeComplete(flag)</code> to complete the challenge.</span>
-              </div>
+              <p className="text-xs text-sub leading-relaxed font-mono">
+                <strong className="text-primary">LLM02 — Insecure Output Handling</strong> occurs when an
+                application renders LLM-generated content without sanitization. If the model produces HTML
+                containing JavaScript, and the frontend blindly injects it via <code className="text-cyan">dangerouslySetInnerHTML</code>,
+                the script executes in the user's browser context.
+              </p>
+              <p className="text-xs text-sub leading-relaxed font-mono mt-3">
+                In this sandbox, the AI assistant is configured to output raw HTML. The frontend deliberately
+                renders assistant responses as unsanitized HTML — creating a cross-site scripting (XSS) surface.
+              </p>
+              <p className="text-xs text-sub leading-relaxed font-mono mt-3">
+                Your goal: convince the model to produce HTML with a JavaScript payload that fetches the flag
+                from <code className="text-cyan">/api/internal/flag</code> and calls{' '}
+                <code className="text-cyan">window.markChallengeComplete(flag)</code>.
+              </p>
             </div>
 
-            {/* Challenge status indicator */}
-            <div className={`mt-4 p-3 border font-mono text-xs flex items-center gap-2 ${
-              challengeComplete
-                ? 'border-green/30 bg-green/5 text-green'
-                : 'border-white/10 bg-white/[0.02] text-muted'
-            }`}>
-              {challengeComplete ? (
-                <>
-                  <CheckCircle2 size={14} />
-                  <span className="font-bold">FLAG CAPTURED</span>
-                </>
-              ) : (
-                <>
-                  <Flag size={14} />
-                  <span>Awaiting payload execution…</span>
-                </>
-              )}
+            {/* Challenge Objective */}
+            <div className="border-t border-white/[0.05] pt-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Flag size={13} className="text-cyan" />
+                <h3 className="font-mono text-sm font-bold text-primary uppercase tracking-wider">
+                  Challenge Objective
+                </h3>
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-start gap-2 text-xs font-mono text-sub">
+                  <span className="text-muted shrink-0 mt-px">1.</span>
+                  <span>Convince the AI to generate HTML containing a <code className="text-cyan">&lt;script&gt;</code> or event-handler payload.</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs font-mono text-sub">
+                  <span className="text-muted shrink-0 mt-px">2.</span>
+                  <span>The payload should fetch <code className="text-cyan">/api/internal/flag</code> (same-origin GET).</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs font-mono text-sub">
+                  <span className="text-muted shrink-0 mt-px">3.</span>
+                  <span>Extract the <code className="text-cyan">flag</code> field from the JSON response.</span>
+                </div>
+                <div className="flex items-start gap-2 text-xs font-mono text-sub">
+                  <span className="text-muted shrink-0 mt-px">4.</span>
+                  <span>Call <code className="text-cyan">window.markChallengeComplete(flag)</code> to complete the challenge.</span>
+                </div>
+              </div>
+
+              {/* Challenge status indicator */}
+              <div className={`mt-4 p-3 border font-mono text-xs flex items-center gap-2 ${
+                challengeComplete
+                  ? 'border-green/30 bg-green/5 text-green'
+                  : 'border-white/10 bg-white/[0.02] text-muted'
+              }`}>
+                {challengeComplete ? (
+                  <>
+                    <CheckCircle2 size={14} />
+                    <span className="font-bold">FLAG CAPTURED</span>
+                  </>
+                ) : (
+                  <>
+                    <Flag size={14} />
+                    <span>Awaiting payload execution…</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
         </div>

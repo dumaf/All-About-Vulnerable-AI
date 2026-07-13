@@ -4,7 +4,11 @@ import type { ChatMessage, ModelStatus, SqlQueryLog } from '../types'
 import NavBar from '../components/NavBar'
 import ModelStatusBanner from '../components/ModelStatusBanner'
 import ChatInterface from '../components/ChatInterface'
+import ScoringPanel from '../components/ScoringPanel'
+import { useScore } from '../context/ScoreContext'
 import { Terminal, Lock } from 'lucide-react'
+
+const CHALLENGE_ID = 'sensitive-info'
 
 export default function SensitiveInformationDisclosure() {
   const [messages, setMessages]       = useState<ChatMessage[]>([])
@@ -15,6 +19,12 @@ export default function SensitiveInformationDisclosure() {
     model_name:    null,
     error_message: null
   })
+  const { setActiveChallenge, incrementQueries } = useScore()
+
+  useEffect(() => {
+    setActiveChallenge(CHALLENGE_ID)
+    return () => setActiveChallenge(null)
+  }, [setActiveChallenge])
 
   useEffect(() => {
     fetchStatus()
@@ -44,6 +54,7 @@ export default function SensitiveInformationDisclosure() {
     setMessages(prev => [...prev, userMsg])
     setLoading(true)
     setLastQueries([])
+    incrementQueries(CHALLENGE_ID)
 
     const apiHistory = messages.map(m => ({ role: m.role, content: m.content }))
 
@@ -109,6 +120,7 @@ export default function SensitiveInformationDisclosure() {
 
         {/* ── Right Sidebar ─────────────────────────────────────── */}
         <div className="w-[380px] flex flex-col bg-surface overflow-y-auto">
+          <ScoringPanel challengeId={CHALLENGE_ID} />
 
           {/* DB Console Panel */}
           {lastQueries.length > 0 && (

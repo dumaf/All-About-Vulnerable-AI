@@ -5,7 +5,11 @@ import NavBar from '../components/NavBar'
 import ModelStatusBanner from '../components/ModelStatusBanner'
 import DocumentUpload from '../components/DocumentUpload'
 import ChatInterface from '../components/ChatInterface'
+import ScoringPanel from '../components/ScoringPanel'
+import { useScore } from '../context/ScoreContext'
 import { Database, FileText, Lock } from 'lucide-react'
+
+const CHALLENGE_ID = 'rag-poisoning'
 
 export default function RagPoisoning() {
   const [documents, setDocuments] = useState<Document[]>([])
@@ -17,6 +21,12 @@ export default function RagPoisoning() {
     model_name: null,
     error_message: null
   })
+  const { setActiveChallenge, incrementQueries } = useScore()
+
+  useEffect(() => {
+    setActiveChallenge(CHALLENGE_ID)
+    return () => setActiveChallenge(null)
+  }, [setActiveChallenge])
 
   const loadData = () => {
     fetchDocuments().then(setDocuments).catch(console.error)
@@ -58,6 +68,7 @@ export default function RagPoisoning() {
     setMessages(prev => [...prev, userMsg])
     setLoading(true)
     setLastContext([])
+    incrementQueries(CHALLENGE_ID)
 
     const apiHistory = messages.map(m => ({
       role: m.role,
@@ -129,6 +140,8 @@ export default function RagPoisoning() {
 
         {/* ── Right Sidebar ─────────────────────────────────────── */}
         <div className="w-[380px] flex flex-col bg-surface overflow-y-auto">
+          <ScoringPanel challengeId={CHALLENGE_ID} />
+
           {/* Explanation Panel */}
           <div className="p-5 space-y-5 border-b border-white/[0.05]">
             <div>

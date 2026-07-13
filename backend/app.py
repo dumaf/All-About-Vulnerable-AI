@@ -6,6 +6,7 @@ from .modules.rag_poisoning.routes import rag_poisoning_bp
 from .modules.context_poisoning.routes import context_poisoning_bp
 from .modules.sensitive_info.routes import sensitive_info_bp
 from .modules.output_handling.routes import output_handling_bp
+from .modules.score.routes import score_bp
 from .model.loader import llm_loader
 
 def create_app():
@@ -21,6 +22,7 @@ def create_app():
     app.register_blueprint(context_poisoning_bp, url_prefix='/api/context-poisoning')
     app.register_blueprint(sensitive_info_bp, url_prefix='/api/sensitive-info')
     app.register_blueprint(output_handling_bp, url_prefix='/api/output-handling')
+    app.register_blueprint(score_bp, url_prefix='/api/score')
 
     @app.route('/api/internal/flag', methods=['GET'])
     def get_flag():

@@ -1,5 +1,5 @@
 import axios from 'axios'
-import type { ModelStatus, ChatResponse, UploadResponse, Document } from '../types'
+import type { ModelStatus, ChatResponse, UploadResponse, Document, ScoreSubmissionResponse } from '../types'
 
 const api = axios.create({ baseURL: '/api' })
 
@@ -82,5 +82,22 @@ export async function outputHandlingChat(
   history: { role: string; content: string }[]
 ): Promise<ChatResponse> {
   const { data } = await api.post('/output-handling/chat', { message, history })
+  return data
+}
+
+export async function submitFlag(
+  sessionId: string,
+  challengeId: string,
+  flag: string,
+  elapsedTime: number,
+  queryCount: number
+): Promise<ScoreSubmissionResponse> {
+  const { data } = await api.post('/score/submit', {
+    session_id: sessionId,
+    challenge_id: challengeId,
+    flag,
+    elapsed_time: elapsedTime,
+    query_count: queryCount,
+  })
   return data
 }

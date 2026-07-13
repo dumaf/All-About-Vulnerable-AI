@@ -12,6 +12,7 @@ export interface ModelStatus {
   error_message: string | null
   rate?:         number
   available?:    boolean
+  flag?:         string
 }
 
 export interface Document {
@@ -45,4 +46,17 @@ export interface UploadResponse {
   filename:       string
   chunks_indexed: number
   error?:         string
+}
+
+export interface ChallengeScoreState {
+  elapsedSeconds: number
+  queryCount:     number
+  solved:         boolean
+  lockedScore:    number | null
+}
+
+export interface ScoreSubmissionResponse {
+  success: boolean
+  score?:  number
+  error?:  string
 }
