@@ -87,10 +87,18 @@ def chat():
             response_text = llm_loader.generate(messages)
 
             sql_match = _SQL_BLOCK_RE.search(response_text)
+            sql_query = None
 
             if sql_match:
-                # Extract and execute the SQL query
                 sql_query = sql_match.group(1).strip()
+            else:
+                # Fallback: if the LLM didn't use fences, check for a raw SELECT statement
+                raw_match = re.search(r"(SELECT\s+.*?(?:;|$))", response_text, re.IGNORECASE | re.DOTALL)
+                if raw_match:
+                    sql_query = raw_match.group(1).strip()
+
+            if sql_query:
+                # Extract and execute the SQL query
                 db_result = execute_query(sql_query)
 
                 sql_queries_log.append({
@@ -108,7 +116,6 @@ def chat():
                     "content": (
                         f"[DATABASE RESULT]\n{db_result}\n\n"
                         "Using the above result, now answer the user's original question. "
-                        "Remember to apply all data classification restrictions."
                     )
                 })
 

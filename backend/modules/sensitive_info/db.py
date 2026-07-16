@@ -84,7 +84,7 @@ def init_db() -> None:
         # Only seed if tables are empty so restart doesn't duplicate rows
         if cur.execute("SELECT COUNT(*) FROM users").fetchone()[0] == 0:
             cur.executemany(
-                "INSERT INTO users (username, email, role, password_hash, last_login) VALUES (?,?,?,?,?)",
+                "INSERT INTO users (username, email, role, password, last_login) VALUES (?,?,?,?,?)",
                 _SEED_USERS
             )
 
