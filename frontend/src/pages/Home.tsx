@@ -1,19 +1,42 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShieldAlert, Database, HelpCircle, Sun, Moon, Zap, DatabaseZap, Code } from 'lucide-react'
+import { ShieldAlert, Database, HelpCircle, Sun, Moon, Zap, DatabaseZap, Code, Trophy } from 'lucide-react'
 import { fetchStatus } from '../api/client'
 import { useTheme } from '../context/ThemeContext'
+import { useScore, calcLiveScore } from '../context/ScoreContext'
 import ModelStatusBanner from '../components/ModelStatusBanner'
 import type { ModelStatus } from '../types'
 
 export default function Home() {
   const navigate = useNavigate()
   const { theme, toggle } = useTheme()
+  const { scores } = useScore()
   const [status, setStatus] = useState<ModelStatus>({
     model_loaded: false,
     model_name: null,
     error_message: null
   })
+
+  const MODULES = useMemo(() => [
+    'prompt-injection',
+    'rag-poisoning',
+    'context-poisoning',
+    'model-dos',
+    'sensitive-info',
+    'output-handling'
+  ], [])
+
+  const maxScore = MODULES.length * 1000
+
+  const cumulativeScore = useMemo(() => {
+    return MODULES.reduce((acc, challengeId) => {
+      const state = scores[challengeId] ?? { elapsedSeconds: 0, queryCount: 0, solved: false, lockedScore: null }
+      const liveScore = state.solved && state.lockedScore !== null
+        ? state.lockedScore
+        : calcLiveScore(state.elapsedSeconds, state.queryCount)
+      return acc + liveScore
+    }, 0)
+  }, [scores, MODULES])
 
   useEffect(() => {
     fetchStatus()
@@ -50,11 +73,22 @@ export default function Home() {
 
       {/* Dashboard options container */}
       <main className="flex-1 overflow-y-auto p-6 md:p-12 max-w-5xl w-full mx-auto flex flex-col justify-center">
-        <div className="mb-12 max-w-2xl">
-          <h2 className="font-mono text-2xl font-semibold mb-3 tracking-tight">AI Vulnerabilities Lab</h2>
-          <p className="text-sm text-sub leading-relaxed font-mono">
-            Learn and test security mechanics in AI LLM systems. Select a sandbox module below to interact with local hardware boundaries.
-          </p>
+        <div className="mb-12 flex justify-between items-start flex-wrap gap-6">
+          <div className="max-w-2xl">
+            <h2 className="font-mono text-2xl font-semibold mb-3 tracking-tight">AI Vulnerabilities Lab</h2>
+            <p className="text-sm text-sub leading-relaxed font-mono">
+              Learn and test security mechanics in AI LLM systems. Select a sandbox module below to interact with local hardware boundaries.
+            </p>
+          </div>
+
+          <div className="flex flex-col items-end">
+            <span className="font-mono text-xs text-muted uppercase tracking-wider mb-2">Cumulative Score</span>
+            <div className="flex items-baseline gap-2 glass px-4 py-2 rounded border border-white/[0.08]">
+              <Trophy size={16} className={cumulativeScore > 3000 ? 'text-green' : 'text-orange'} />
+              <span className="font-mono text-2xl font-bold text-primary">{cumulativeScore}</span>
+              <span className="font-mono text-sm text-muted">/ {maxScore}</span>
+            </div>
+          </div>
         </div>
 
         {/* Challenge Cards Grid */}
