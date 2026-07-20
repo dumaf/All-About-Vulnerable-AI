@@ -1,8 +1,19 @@
+import os
 import time
 import threading
 from collections import deque
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from dotenv import load_dotenv
+
+# Load .env from project root
+_ROOT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
+load_dotenv(os.path.join(_ROOT_DIR, ".env"))
+
+_FLAG_MODEL_DOS = os.environ["FLAG_MODEL_DOS"]
+_DOS_HOST = os.getenv("DOS_HOST", os.environ["HOST"])
+_DOS_PORT = int(os.getenv("DOS_PORT", "5001"))
+_DOS_DEBUG = os.getenv("FLASK_DEBUG", "false").lower() in ("true", "1", "t")
 
 app = Flask(__name__)
 CORS(app)
@@ -38,7 +49,7 @@ def get_status():
             "error_message": f"Service Unavailable (HTTP 429: Too Many Requests) - Model Denial of Service attack detected. Cooling down for {cooldown_remaining}s.",
             "rate": rate,
             "available": False,
-            "flag": "FLAG{D0S_4TT4CK_SUCC3SS}"
+            "flag": f"FLAG{{{_FLAG_MODEL_DOS}}}"
         }), 200
     else:
         return jsonify({
@@ -90,5 +101,4 @@ def chat():
     }), 200
 
 if __name__ == '__main__':
-    # Run on port 5001
-    app.run(host='0.0.0.0', port=5001, debug=True, use_reloader=False)
+    app.run(host=_DOS_HOST, port=_DOS_PORT, debug=_DOS_DEBUG, use_reloader=False)

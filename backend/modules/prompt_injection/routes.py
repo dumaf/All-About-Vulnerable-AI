@@ -1,6 +1,7 @@
 import os
 from flask import Blueprint, request, jsonify
 from ...model.loader import llm_loader
+from ...config import FLAG_PROMPT_INJECTION_SECRET
 
 
 prompt_injection_bp = Blueprint('prompt_injection', __name__)
@@ -11,7 +12,8 @@ SYS_PROMPT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "syst
 def load_system_prompt():
     if os.path.exists(SYS_PROMPT_PATH):
         with open(SYS_PROMPT_PATH, "r", encoding="utf-8") as f:
-            return f.read().strip()
+            template = f.read().strip()
+        return template.replace("{{FLAG_PROMPT_INJECTION_SECRET}}", FLAG_PROMPT_INJECTION_SECRET)
     return "You are a secure assistant."
 
 @prompt_injection_bp.route('/chat', methods=['POST'])

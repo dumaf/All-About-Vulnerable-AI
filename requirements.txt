@@ -17,11 +17,11 @@ trl>=0.11.0
 huggingface_hub
 safetensors
 llama-cpp-python
-python-dotenv
+scikit-learn
 flask
 flask-cors
+python-dotenv
 faiss-cpu
 PyPDF2
 sentence-transformers
-
 unsloth

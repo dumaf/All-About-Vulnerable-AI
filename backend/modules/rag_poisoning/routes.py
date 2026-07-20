@@ -14,6 +14,7 @@ from pathlib import Path
 from flask import Blueprint, request, jsonify
 
 from ... import config
+from ...config import FLAG_RAG_POISONING
 from ...model.loader import llm_loader
 from .pipeline import rag_pipeline
 
@@ -25,7 +26,8 @@ _SYSTEM_PROMPT_PATH = os.path.join(os.path.dirname(__file__), "system_prompt.txt
 def _load_system_prompt() -> str:
     try:
         with open(_SYSTEM_PROMPT_PATH, "r", encoding="utf-8") as f:
-            return f.read().strip()
+            template = f.read().strip()
+        return template.replace("{{FLAG_RAG_POISONING}}", FLAG_RAG_POISONING)
     except FileNotFoundError:
         return ""
 

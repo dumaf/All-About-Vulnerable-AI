@@ -12,18 +12,26 @@ effectively discarding all state.
 """
 
 from flask import Blueprint, request, jsonify
+from ...config import (
+    FLAG_PROMPT_INJECTION,
+    FLAG_RAG_POISONING,
+    FLAG_CONTEXT_POISONING,
+    FLAG_SENSITIVE_INFO,
+    FLAG_OUTPUT_HANDLING,
+    FLAG_MODEL_DOS,
+)
 
 score_bp = Blueprint("score", __name__)
 
 # ── Flag registry ────────────────────────────────────────────────────────────
 # Maps challenge_id → expected flag value (inner text only, no wrapper).
 _FLAGS: dict[str, str] = {
-    "prompt-injection":    "PR0MPT_1NJ3CT10N_SUCC3SS",
-    "rag-poisoning":       "1_am_th3_AI",
-    "context-poisoning":   "C0NT3XT_P01S0N1NG_SUCC3SS",
-    "sensitive-info":      "llm_agent_db_l3ak_pwnd",
-    "output-handling":     "OUTPUT_HANDLING_SUCCESS",
-    "model-dos":           "D0S_4TT4CK_SUCC3SS",
+    "prompt-injection":    FLAG_PROMPT_INJECTION,
+    "rag-poisoning":       FLAG_RAG_POISONING,
+    "context-poisoning":   FLAG_CONTEXT_POISONING,
+    "sensitive-info":      FLAG_SENSITIVE_INFO,
+    "output-handling":     FLAG_OUTPUT_HANDLING,
+    "model-dos":           FLAG_MODEL_DOS,
 }
 
 # ── In-memory session store ──────────────────────────────────────────────────

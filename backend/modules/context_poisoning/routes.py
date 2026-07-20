@@ -1,6 +1,7 @@
 import os
 from flask import Blueprint, request, jsonify
 from ...model.loader import llm_loader
+from ...config import FLAG_CONTEXT_POISONING
 
 
 context_poisoning_bp = Blueprint('context_poisoning', __name__)
@@ -11,7 +12,8 @@ SYS_PROMPT_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "syst
 def load_system_prompt():
     if os.path.exists(SYS_PROMPT_PATH):
         with open(SYS_PROMPT_PATH, "r", encoding="utf-8") as f:
-            return f.read().strip()
+            template = f.read().strip()
+        return template.replace("{{FLAG_CONTEXT_POISONING}}", FLAG_CONTEXT_POISONING)
     return "You are a secure assistant."
 
 @context_poisoning_bp.route('/chat', methods=['POST'])

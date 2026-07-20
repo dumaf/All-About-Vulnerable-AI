@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
-from .config import HOST, PORT, DEBUG
+from .config import HOST, PORT, DEBUG, FLAG_OUTPUT_HANDLING
 from .modules.prompt_injection.routes import prompt_injection_bp
 from .modules.rag_poisoning.routes import rag_poisoning_bp
 from .modules.context_poisoning.routes import context_poisoning_bp
@@ -30,7 +30,7 @@ def create_app():
         Vulnerable endpoint for the Output Handling challenge.
         Returns the flag — only obtainable through a same-origin XSS payload.
         """
-        return jsonify({"flag": "FLAG{OUTPUT_HANDLING_SUCCESS}"}), 200
+        return jsonify({"flag": f"FLAG{{{FLAG_OUTPUT_HANDLING}}}"}), 200
 
     @app.route('/api/status', methods=['GET'])
     def get_status():

@@ -69,6 +69,21 @@ User Upload (PDF/TXT) → Text Extraction → Sliding-Window Chunking
 - **Retrieval**: Top-K=3 chunks are prepended to the user message with `[Document: name]` markers.
 - **Deletion**: FAISS index is rebuilt from scratch when documents are removed (IndexFlatL2 does not support direct deletion).
 
+---
+
+## Challenge Scoring System (CTF Mode)
+
+AAVAI features a gamified, Capture The Flag (CTF) style scoring system to evaluate exploitation efficiency across all sandbox challenges:
+
+* **Starting Score**: Each challenge starts with a base score of `1000` points.
+* **Real-time Penalties**:
+  * **Time Penalty**: `-0.5` points per second elapsed while a challenge page is active.
+  * **Query Penalty**: `-20` points per query sent to the LLM.
+* **Flag Submission**: Users explore model outputs, databases, and APIs to uncover the hidden flag (e.g. `FLAG{...}` or `AAVAI{...}`), then submit it in the sidebar scoring panel.
+* **Session-Based State**: Progress is tracked using an in-memory session store on the Flask backend and React's `ScoreContext` (persisted in `sessionStorage`). Once a correct flag is verified and submitted, the score is locked.
+
+---
+
 ## Model Used
 
 **Current Model**
@@ -83,16 +98,19 @@ The model was selected because it provides a balance between performance, hardwa
 
 ### Minimum Requirements
 
+* Quad-core CPU
 * NVIDIA GPU with 4GB VRAM
 * 8GB System RAM
+* 10 GB available storage space
 * Python 3.10+
 * Windows, Linux, or macOS
 
 ### Recommended Requirements
 
+* Quad-core CPU or higher
 * NVIDIA RTX 3060 / RTX 4060 or higher
 * 16GB+ RAM
-* SSD Storage
+* 10 GB+ SSD storage space
 * CUDA-enabled drivers
 
 ---
@@ -286,6 +304,8 @@ AAVAI/
 │       │   ├── db.py              # SQLite database and restricted query helper
 │       │   ├── routes.py          # POST /chat (LLM query execution loop)
 │       │   └── system_prompt.txt  # AcmeCorp data classification system prompt
+│       ├── score/                 # Challenge scoring system module
+│       │   └── routes.py          # POST /submit, GET /status endpoints (in-memory session state)
 │       └── rag_poisoning/         # Indirect injection sandbox
 │           ├── document_store/    # Ingested PDF/TXT files
 │           ├── faiss_index/       # Vector storage (index.faiss)
@@ -305,15 +325,17 @@ AAVAI/
 │       ├── App.tsx                # Router setup
 │       ├── index.css              # Glassmorphism & dot-grid theme styles
 │       ├── api/
-│       │   └── client.ts          # Axios HTTP client (status, chat, upload, documents)
+│       │   └── client.ts          # Axios HTTP client (status, chat, upload, documents, submitFlag)
 │       ├── context/
-│       │   └── ThemeContext.tsx    # Dark/light theme provider
+│       │   ├── ThemeContext.tsx    # Dark/light theme provider
+│       │   └── ScoreContext.tsx    # Score tracking provider (sessionStorage sync)
 │       ├── types/
-│       │   └── index.ts           # TypeScript interfaces (ChatMessage, Document, etc.)
+│       │   └── index.ts           # TypeScript interfaces (ChatMessage, ChallengeScoreState, etc.)
 │       ├── components/            # Reusable UI components
 │       │   ├── ChatInterface.tsx  # Chat bubble display + input form
 │       │   ├── DocumentUpload.tsx # Drag-drop file upload + document list
 │       │   ├── ModelStatusBanner.tsx  # LLM loading/error/ready indicator
+│       │   ├── ScoringPanel.tsx   # Submits flags, ticks live timer, displays metrics
 │       │   └── NavBar.tsx         # Top navigation with back button + theme toggle
 │       └── pages/                 # View layouts
 │           ├── Home.tsx           # Dashboard with module selection cards
