@@ -36,3 +36,4 @@ backend/modules/rag_poisoning/faiss_metadata.json
 .idea/
 .DS_Store
 *.log
+llm/*.json

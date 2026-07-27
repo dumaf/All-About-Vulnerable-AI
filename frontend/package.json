@@ -8,6 +8,7 @@
     "dev:backend": "bash ../backend/start.sh",
     "dev:dos-backend": "bash ../backend/start_dos.sh",
     "dev:frontend": "vite --port 5173",
+    "host":"concurrently -n BACKEND,DOS_BACKEND,FRONTEND -c magenta,red,cyan \"npm run dev:backend\" \"npm run dev:dos-backend\" \"npm run dev:frontend -- --host\"",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
