@@ -261,6 +261,25 @@ Verify PyTorch and GPU availability:
 python -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
 ```
 
+### 4. Authenticate & Download Base LLM Model (Llama-3.2-3B-Instruct)
+
+The core LLM engine requires the base model weights for `meta-llama/Llama-3.2-3B-Instruct`. Since Llama models are gated on Hugging Face, you must accept the license terms and authenticate before downloading:
+
+1. **Request Access & Obtain Token:**
+   Visit the [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) model page on Hugging Face to accept Meta's license agreement. Then, create an Access Token (with `read` permissions) from [Hugging Face Tokens](https://huggingface.co/settings/tokens).
+
+2. **Authenticate:**
+   Log in with your token:
+   ```bash
+   hf auth login --token <YOUR_HF_TOKEN>
+   ```
+
+3. **Download Model Weights to Local Directory:**
+   Download the model files directly into `./Llama-3.2-3B-Instruct`:
+   ```bash
+   hf download meta-llama/Llama-3.2-3B-Instruct --local-dir ./Llama-3.2-3B-Instruct
+   ```
+
 ---
 
 # Running the Application

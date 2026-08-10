@@ -69,7 +69,17 @@ If you find a bug, have a feature request, or notice a documentation gap:
    pip install -r requirements.txt
    ```
 
-4. Install frontend dependencies:
+4. Authenticate & Download Base LLM Model (`meta-llama/Llama-3.2-3B-Instruct`):
+   * Request access at [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) and generate a token at [Hugging Face Tokens](https://huggingface.co/settings/tokens).
+   ```bash
+   # Log in to Hugging Face
+   hf auth login --token <YOUR_HF_TOKEN>
+
+   # Download model weights to `./Llama-3.2-3B-Instruct`
+   hf download meta-llama/Llama-3.2-3B-Instruct --local-dir ./Llama-3.2-3B-Instruct
+   ```
+
+5. Install frontend dependencies:
    ```bash
    cd frontend
    npm install
