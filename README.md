@@ -194,7 +194,7 @@ AAVAI implements 6 interactive security challenges based on the **OWASP Top 10 f
 # Technologies Used
 
 ### Backend & AI
-- **Python 3.10+**
+- **Python 3.10 - 3.11**
 - **Flask & Flask-CORS:** Lightweight RESTful API server.
 - **PyTorch 2.6:** Deep learning framework.
 - **Transformers & PEFT:** Model loading and LoRA multi-adapter merging.
@@ -234,6 +234,15 @@ AAVAI implements 6 interactive security challenges based on the **OWASP Top 10 f
 
 # Installation & Setup
 
+### 0. System Prerequisites (Linux / Debian / Ubuntu)
+
+Before proceeding with installation, update your package index and ensure `python3-venv` and `python3-pip` are installed:
+
+```bash
+sudo apt update
+sudo apt install -y python3-venv python3-full
+```
+
 ### 1. Clone the Repository
 
 ```bash
@@ -249,7 +258,16 @@ Copy the environment variable template:
 cp .env.example .env
 ```
 
-### 3. Install Python Dependencies
+### 3. Create Virtual Environment & Install Python Dependencies
+
+Create and activate a virtual environment:
+
+```bash
+python3 -m venv venv
+source venv/bin/activate
+```
+
+Install Python dependencies:
 
 ```bash
 pip install -r requirements.txt
@@ -261,12 +279,15 @@ Verify PyTorch and GPU availability:
 python -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
 ```
 
+
 ### 4. Authenticate & Download Base LLM Model (Llama-3.2-3B-Instruct)
 
-The core LLM engine requires the base model weights for `meta-llama/Llama-3.2-3B-Instruct`. Since Llama models are gated on Hugging Face, you must accept the license terms and authenticate before downloading:
+> [!IMPORTANT]
+> **Hugging Face Model Access Required:** The base model `meta-llama/Llama-3.2-3B-Instruct` is a gated repository on Hugging Face. You **must** have an active Hugging Face account and request/gain access on the official model page before downloading model weights.
 
 1. **Request Access & Obtain Token:**
-   Visit the [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) model page on Hugging Face to accept Meta's license agreement. Then, create an Access Token (with `read` permissions) from [Hugging Face Tokens](https://huggingface.co/settings/tokens).
+   - Visit the official [meta-llama/Llama-3.2-3B-Instruct](https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct) page on Hugging Face and click **Accept License / Request Access**.
+   - Generate a User Access Token (with `read` permissions) from your [Hugging Face Settings -> Tokens](https://huggingface.co/settings/tokens).
 
 2. **Authenticate:**
    Log in with your token:
@@ -275,10 +296,9 @@ The core LLM engine requires the base model weights for `meta-llama/Llama-3.2-3B
    ```
 
 3. **Download Model Weights to Local Directory:**
-   Download the model files directly into `./Llama-3.2-3B-Instruct`:
-   ```bash
-   hf download meta-llama/Llama-3.2-3B-Instruct --local-dir ./Llama-3.2-3B-Instruct
-   ```
+   Execute the Hugging Face CLI download command to pull `meta-llama/Llama-3.2-3B-Instruct` directly into the `./Llama-3.2-3B-Instruct` directory:
+   *(Alternatively, using the `hf` CLI shortcut: `hf download meta-llama/Llama-3.2-3B-Instruct --local-dir ./Llama-3.2-3B-Instruct`)*
+
 
 ---
 
@@ -300,24 +320,6 @@ The core LLM engine requires the base model weights for `meta-llama/Llama-3.2-3B
 3. Access the web applications:
    - **Frontend UI:** `http://localhost:5173`
    - **Backend API:** `http://127.0.0.1:5000`
-
-### Running the Model DoS Backend Simulator
-
-In a separate terminal, launch the Model DoS backend:
-
-```bash
-python backend/dos_app.py
-```
-*Listens on `http://127.0.0.1:5001`.*
-
-### Running Console CLI Chat
-
-For direct model interaction via command line:
-
-```bash
-cd llm
-python chat.py
-```
 
 ---
 
