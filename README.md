@@ -203,12 +203,23 @@ AAVAI implements 6 interactive security challenges based on the **OWASP Top 10 f
 - **PyPDF2:** PDF document text extraction.
 
 ### Frontend
-- **React 18:** Component-based user interface.
-- **TypeScript:** Type-safe frontend code.
-- **Vite 6:** Lightning-fast frontend build tool.
-- **Tailwind CSS 3.4:** Modern utility-first styling.
-- **Lucide React:** Vector iconography.
-- **Axios:** Asynchronous API HTTP client.
+
+Node-based toolchain, installed by `npm install` inside `frontend/`. Minimum runtime versions are listed under [Installation & Setup](#5-frontend-toolchain-prerequisites-nodejs--npm).
+| Requirement | Minimum | Recommended | Why |
+|---|---|---|---|
+| **Node.js** | `22.0.0` | `22 LTS` or `24 LTS` | `concurrently@10` declares `engines: { node: ">=22" }`; Vite 6 supports `^18 \|\| ^20 \|\| >=22` — Node 22 is the effective floor for the combined dev script |
+| **npm** | `10.x` | `11.x` | Bundled with Node 22 / 24; `package-lock.json` is lockfile v3 |
+| `react` / `react-dom` | `^18.3.1` | dependency | Component-based user interface |
+| `react-router-dom` | `^7.1.3` | dependency | Client-side routing between challenge pages |
+| `axios` | `^1.7.9` | dependency | Asynchronous HTTP client for `/api` calls |
+| `lucide-react` | `^0.468.0` | dependency | Vector iconography |
+| `vite` | `^6.0.7` | devDependency | Dev server, `/api` proxy, production bundler |
+| `@vitejs/plugin-react` | `^4.3.4` | devDependency | React Fast Refresh / JSX transform |
+| `typescript` | `^5.7.2` | devDependency | Type-safe frontend code (`tsc` runs during `npm run build`) |
+| `tailwindcss` | `^3.4.17` | devDependency | Utility-first styling |
+| `postcss` / `autoprefixer` | `^8.5.1` / `^10.4.20` | devDependency | CSS processing pipeline |
+| `concurrently` | `^10.0.3` | devDependency | Runs Flask backend, DoS backend, and Vite in one terminal |
+| `@types/react` / `@types/react-dom` | `^18.3.17` / `^18.3.5` | devDependency | React type definitions |
 
 ---
 
@@ -300,6 +311,22 @@ python -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
    *(Alternatively, using the `hf` CLI shortcut: `hf download meta-llama/Llama-3.2-3B-Instruct --local-dir ./Llama-3.2-3B-Instruct`)*
 
 
+### 5. Frontend Toolchain Prerequisites (Node.js & npm)
+
+The web client is a Node-based toolchain. Install Node.js **before** running `npm install` in `frontend/`.
+
+
+Verify your toolchain:
+
+```bash
+node -v    # v22.x.x or newer
+npm -v     # 10.x or newer
+```
+
+> [!NOTE]
+> If your distro ships an older Node, install Node 22+ via [nvm](https://github.com/nvm-sh/nvm) (`nvm install 22 && nvm use 22`) or [nodesource](https://github.com/nodesource/distributions). Node 18/20 will fail on `concurrently`.
+
+
 ---
 
 # Running the Application
@@ -320,6 +347,37 @@ python -c "import torch; print('CUDA Available:', torch.cuda.is_available())"
 3. Access the web applications:
    - **Frontend UI:** `http://localhost:5173`
    - **Backend API:** `http://127.0.0.1:5000`
+   - **Model DoS API:** `http://127.0.0.1:5001`
+
+### Available npm Scripts
+
+| Script | Command | What it starts |
+|---|---|---|
+| `dev` | `npm run dev` | Flask backend (`:5000`) + DoS backend (`:5001`) + Vite (`:5173`), **bound to localhost only** |
+| `host` | `npm run host` | Same as `dev`, but Vite is bound to all interfaces (`--host`) for **LAN / network access** |
+| `dev:backend` | `npm run dev:backend` | Flask backend only |
+| `dev:dos-backend` | `npm run dev:dos-backend` | Model DoS backend only |
+| `dev:frontend` | `npm run dev:frontend` | Vite dev server only |
+| `build` | `npm run build` | Type-checks with `tsc` and builds the production bundle |
+| `preview` | `npm run preview` | Serves the built production bundle locally |
+
+### Accessing AAVAI Over a Network
+
+`npm run dev` binds Vite to `localhost`, so the lab is reachable **only from the machine running it**. To reach it from another device (a workshop LAN, a VM host, a separate attacker box), start it with the host script instead:
+
+```bash
+cd frontend
+npm run host          # equivalent to: npm run dev:frontend -- --host
+```
+
+Then browse to `http://<SERVER_LAN_IP>:5173` from the other machine.
+
+- Only the **Vite port (5173)** needs to be reachable. The Flask backends can stay on `127.0.0.1`, because Vite proxies `/api` and `/api/model-denial-of-service` server-side (see `frontend/vite.config.ts`).
+- Allow inbound TCP `5173` through the host firewall (e.g. `sudo ufw allow 5173/tcp`, or a Windows Defender Firewall inbound rule).
+- To bind the backends themselves to the network as well (only needed if you call the Flask APIs directly, bypassing Vite), set `HOST=0.0.0.0` in `.env`.
+
+> [!WARNING]
+> AAVAI is **intentionally vulnerable** by design. Only expose it on trusted, isolated, or lab networks — never on a public interface or the open internet.
 
 ---
 
